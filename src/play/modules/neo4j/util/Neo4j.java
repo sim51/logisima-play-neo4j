@@ -1,10 +1,11 @@
-package play.modules.neo4j;
+package play.modules.neo4j.util;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 
 import play.Logger;
 import play.Play;
+import play.modules.neo4j.exception.Neo4jException;
 
 /**
  * Class to retrieve a valid <code>GraphDatabaseService</code> for application (<code>graphDb</code> is in a

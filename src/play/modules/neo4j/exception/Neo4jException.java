@@ -1,4 +1,4 @@
-package play.modules.neo4j;
+package play.modules.neo4j.exception;
 
 import play.exceptions.PlayException;
 

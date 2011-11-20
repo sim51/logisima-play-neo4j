@@ -5,6 +5,8 @@ import play.Play;
 import play.Play.Mode;
 import play.PlayPlugin;
 import play.classloading.ApplicationClasses.ApplicationClass;
+import play.modules.neo4j.model.Neo4jModelEnhancer;
+import play.modules.neo4j.util.Neo4j;
 import play.mvc.Router;
 
 /**
@@ -35,7 +37,7 @@ public class Neo4jPlugin extends PlayPlugin {
     @Override
     public void enhance(ApplicationClass appClass) throws Exception {
         // for enhance Neo4jModel class, to add getter/setter on the wrapped node
-        new Neo4jEnhancer().enhanceThisClass(appClass);
+        new Neo4jModelEnhancer().enhanceThisClass(appClass);
     }
 
     @Override

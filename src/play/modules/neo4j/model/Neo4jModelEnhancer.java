@@ -1,4 +1,4 @@
-package play.modules.neo4j;
+package play.modules.neo4j.model;
 
 import java.lang.reflect.Modifier;
 
@@ -21,7 +21,7 @@ import play.exceptions.UnexpectedException;
  * @author bsimard
  * 
  */
-public class Neo4jEnhancer extends Enhancer {
+public class Neo4jModelEnhancer extends Enhancer {
 
     @Override
     public void enhanceThisClass(ApplicationClass applicationClass) throws Exception {
