@@ -43,7 +43,7 @@ public class Neo4jModelEnhancer extends Enhancer {
             }
             if (!hasDefaultConstructor && !ctClass.isInterface()) {
                 CtConstructor defaultConstructor = CtNewConstructor.make("public " + ctClass.getSimpleName()
-                        + "(org.neo4j.graphdb.Node underlyingNode ) { this.underlyingNode = underlyingNode;}", ctClass);
+                        + "() { super();}", ctClass);
                 ctClass.addConstructor(defaultConstructor);
             }
         } catch (Exception e) {
@@ -68,15 +68,24 @@ public class Neo4jModelEnhancer extends Enhancer {
 
                     try {
                         CtMethod ctMethod = ctClass.getDeclaredMethod(getter);
-                        ctClass.removeMethod(ctMethod);
-                        throw new NotFoundException("it's not a true getter !");
+                        if (!ctMethod.getName().equalsIgnoreCase("getShouldBeSave")) {
+                            ctClass.removeMethod(ctMethod);
+                            throw new NotFoundException("it's not a true getter !");
+                        }
                     } catch (NotFoundException noGetter) {
 
                         // Créé le getter
                         Logger.debug("Adding getter  " + getter + " for class " + entityName);
-                        String code = "public " + ctField.getType().getName() + " " + getter + "() { return ("
-                                + ctField.getType().getName() + ")this.underlyingNode.getProperty(\""
-                                + ctField.getName() + "\", null);}";
+                        //@formatter:off
+                        String code = "public " + ctField.getType().getName() + " " + getter + "() {" +
+                        		            "if(this.shouldBeSave == Boolean.TRUE){" +
+                        		                "return " + ctField.getName() + ";" +
+                        		            "}else{" +
+                    		                    "return ((" + ctField.getType().getName() + ") this.underlyingNode.getProperty(\""+ ctField.getName() + "\", null));" +
+                    		                "}" +
+        		                		"}";
+                        //@formatter:on
+                        Logger.debug(code);
                         CtMethod getMethod = CtMethod.make(code, ctClass);
                         ctClass.addMethod(getMethod);
                     }
@@ -95,14 +104,13 @@ public class Neo4jModelEnhancer extends Enhancer {
                     } catch (NotFoundException noSetter) {
                         // Créé le setter
                         Logger.debug("Adding setter  " + getter + " for class " + entityName);
+                        //@formatter:off
                         CtMethod setMethod = CtMethod
-                                .make("public void "
-                                        + setter
-                                        + "("
-                                        + ctField.getType().getName()
-                                        + " value) { org.neo4j.graphdb.Transaction tx = play.modules.neo4j.util.Neo4j.db().beginTx();try {this.underlyingNode.setProperty(\""
-                                        + ctField.getName() + "\", value);tx.success(); } finally {tx.finish();}}",
-                                        ctClass);
+                                .make("public void " + setter + "(" + ctField.getType().getName() + " value) { " +
+                                            "this."  + ctField.getName() + " = value;" +
+                                		    "this.shouldBeSave = Boolean.TRUE;" +
+                    		          "}", ctClass);
+                        //formatter:on
                         ctClass.addMethod(setMethod);
                     }
                 }

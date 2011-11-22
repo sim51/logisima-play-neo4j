@@ -115,10 +115,22 @@ public abstract class AbstractNeo4jFactory {
     public Neo4jModel saveAndIndex(Neo4jModel nodeWrapper) throws Neo4jReflectionException {
         Transaction tx = Neo4j.db().beginTx();
         try {
-            // if there is already an id, don't generate it
-            if (nodeWrapper.getKey() == null) {
+            // if there is no underluingnode, we generate an auto key
+            if (nodeWrapper.getNode() == null) {
                 nodeWrapper.setKey(getNextId());
             }
+
+            // if nodeWrapper is new (does'nt have a node value), we create the node
+            if (nodeWrapper.getNode() == null) {
+                nodeWrapper.setNode(Neo4j.db().createNode());
+                for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
+                    if (!field.getName().equals("underlyingNode") && !field.getName().equals("shouldBeSave")
+                            && field.get(nodeWrapper) != null) {
+                        nodeWrapper.getNode().setProperty(field.getName(), field.get(nodeWrapper));
+                    }
+                }
+            }
+
             // create the reference 2 node relationship
             referenceNode.createRelationshipTo(nodeWrapper.getNode(), this.ref2node);
 

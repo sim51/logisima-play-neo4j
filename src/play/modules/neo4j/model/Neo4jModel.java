@@ -24,24 +24,23 @@ public abstract class Neo4jModel {
      * Unique id autogenerate by the factory
      */
     @Neo4jIndex
-    public Long       key;
+    public Long    key;
 
     /**
-     * underlying node of the model.
+     * Underlying node of the model.
      */
-    public final Node underlyingNode;
+    public Node    underlyingNode;
+
+    /**
+     * Boolean to know if the pojo as been changed, and so if the <code>save</code> method should be invoke.
+     */
+    public Boolean shouldBeSave = Boolean.FALSE;
 
     /**
      * Default constructor for creation.
      */
     public Neo4jModel() {
-        Transaction tx = Neo4j.db().beginTx();
-        try {
-            this.underlyingNode = Neo4j.db().createNode();
-            tx.success();
-        } finally {
-            tx.finish();
-        }
+        this.shouldBeSave = Boolean.TRUE;
     }
 
     /**
@@ -67,7 +66,6 @@ public abstract class Neo4jModel {
      */
     public void setKey(Long id) {
         this.key = id;
-        this.underlyingNode.setProperty("key", id);
     }
 
     /**
@@ -77,6 +75,22 @@ public abstract class Neo4jModel {
      */
     public Node getNode() {
         return underlyingNode;
+    }
+
+    /**
+     * Setter for underlying node.
+     * 
+     * @param underlyingNode
+     */
+    public void setNode(Node underlyingNode) {
+        this.underlyingNode = underlyingNode;
+    }
+
+    /**
+     * @return the shouldBeSave
+     */
+    public Boolean getShouldBeSave() {
+        return shouldBeSave;
     }
 
     /**
