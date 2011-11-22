@@ -8,7 +8,6 @@
 
     <path id="project.classpath">
         <pathelement path="${play.path}/framework/classes"/>
-    	<pathelement path="./app"/>
         <fileset dir="${play.path}/framework/lib">
             <include name="*.jar"/>
         </fileset>
