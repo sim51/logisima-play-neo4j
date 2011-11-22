@@ -5,13 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import models.relationship.EntityRelationType;
-
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Neo4jFactory {
 
-    EntityRelationType root2ref();
+    Class clazz();
 
-    EntityRelationType ref2node();
+    String root2ref();
+
+    String ref2node();
 }

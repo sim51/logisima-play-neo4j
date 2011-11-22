@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="views/**" kind="src" path="app"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="app"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="/usr/local/play/play-1.2.3/framework/play-1.2.3.jar" sourcepath="/usr/local/play/play-1.2.3/framework/src"/>
 	<classpathentry kind="lib" path="/home/bsimard/workspace_logisima/EntreePlatDessert/plugins/neo4j/lib/scala-library-2.9.0-1.jar"/>

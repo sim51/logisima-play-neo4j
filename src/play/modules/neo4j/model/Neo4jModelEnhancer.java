@@ -1,5 +1,6 @@
 package play.modules.neo4j.model;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 
 import javassist.CtClass;
@@ -11,7 +12,6 @@ import javassist.NotFoundException;
 import play.Logger;
 import play.classloading.ApplicationClasses.ApplicationClass;
 import play.classloading.enhancers.Enhancer;
-import play.classloading.enhancers.PropertiesEnhancer.PlayPropertyAccessor;
 import play.exceptions.UnexpectedException;
 
 /**
@@ -28,7 +28,7 @@ public class Neo4jModelEnhancer extends Enhancer {
         CtClass ctClass = makeClass(applicationClass);
 
         // Only enhance Neo4jModel classes.
-        if (!ctClass.subtypeOf(classPool.get("play.modules.neo4j.Neo4jModel"))) {
+        if (!ctClass.subtypeOf(classPool.get("play.modules.neo4j.model.Neo4jModel"))) {
             return;
         }
 
@@ -52,11 +52,14 @@ public class Neo4jModelEnhancer extends Enhancer {
         }
 
         String entityName = ctClass.getName();
+        Logger.debug("Enhance class " + entityName);
 
         // for all field, we add getter / setter
         for (CtField ctField : ctClass.getDeclaredFields()) {
             try {
+                Logger.debug("Field " + ctField.getName() + " is a property ?");
                 if (isProperty(ctField)) {
+                    Logger.debug("true");
                     // Property name
                     String propertyName = ctField.getName().substring(0, 1).toUpperCase()
                             + ctField.getName().substring(1);
@@ -65,14 +68,15 @@ public class Neo4jModelEnhancer extends Enhancer {
 
                     try {
                         CtMethod ctMethod = ctClass.getDeclaredMethod(getter);
-                        if (ctMethod.getParameterTypes().length > 0 || Modifier.isStatic(ctMethod.getModifiers())) {
-                            throw new NotFoundException("it's not a getter !");
-                        }
+                        ctClass.removeMethod(ctMethod);
+                        throw new NotFoundException("it's not a true getter !");
                     } catch (NotFoundException noGetter) {
+
                         // Créé le getter
+                        Logger.debug("Adding getter  " + getter + " for class " + entityName);
                         String code = "public " + ctField.getType().getName() + " " + getter + "() { return ("
                                 + ctField.getType().getName() + ")this.underlyingNode.getProperty(\""
-                                + ctField.getName() + "\");}";
+                                + ctField.getName() + "\", null);}";
                         CtMethod getMethod = CtMethod.make(code, ctClass);
                         ctClass.addMethod(getMethod);
                     }
@@ -81,16 +85,25 @@ public class Neo4jModelEnhancer extends Enhancer {
                         CtMethod ctMethod = ctClass.getDeclaredMethod(setter);
                         if (ctMethod.getParameterTypes().length != 1
                                 || !ctMethod.getParameterTypes()[0].equals(ctField.getType())
-                                || Modifier.isStatic(ctMethod.getModifiers())) {
-                            throw new NotFoundException("it's not a setter !");
+                                || Modifier.isStatic(ctMethod.getModifiers())
+                                || hasPlayPropertiesAccessorAnnotation(ctMethod)) {
+                            if (hasPlayPropertiesAccessorAnnotation(ctMethod)) {
+                                ctClass.removeMethod(ctMethod);
+                            }
+                            throw new NotFoundException("it's not a true setter !");
                         }
                     } catch (NotFoundException noSetter) {
                         // Créé le setter
-                        CtMethod setMethod = CtMethod.make("public void " + setter + "(" + ctField.getType().getName()
-                                + " value) { this.underlyingNode.setPrpoerty(" + ctField.getName() + ", value); }",
-                                ctClass);
+                        Logger.debug("Adding setter  " + getter + " for class " + entityName);
+                        CtMethod setMethod = CtMethod
+                                .make("public void "
+                                        + setter
+                                        + "("
+                                        + ctField.getType().getName()
+                                        + " value) { org.neo4j.graphdb.Transaction tx = play.modules.neo4j.util.Neo4j.db().beginTx();try {this.underlyingNode.setProperty(\""
+                                        + ctField.getName() + "\", value);tx.success(); } finally {tx.finish();}}",
+                                        ctClass);
                         ctClass.addMethod(setMethod);
-                        createAnnotation(getAnnotations(setMethod), PlayPropertyAccessor.class);
                     }
                 }
             } catch (Exception e) {
@@ -98,6 +111,9 @@ public class Neo4jModelEnhancer extends Enhancer {
                 throw new UnexpectedException("Error in PropertiesEnhancer", e);
             }
         }
+        // Done.
+        applicationClass.enhancedByteCode = ctClass.toBytecode();
+        ctClass.defrost();
 
     }
 
@@ -111,6 +127,23 @@ public class Neo4jModelEnhancer extends Enhancer {
         }
         return Modifier.isPublic(ctField.getModifiers()) && !Modifier.isFinal(ctField.getModifiers())
                 && !Modifier.isStatic(ctField.getModifiers());
+    }
+
+    /**
+     * Is this method get PlayPropertiesAccessor annotation ?
+     */
+    private boolean hasPlayPropertiesAccessorAnnotation(CtMethod ctMethod) {
+        for (Object object : ctMethod.getAvailableAnnotations()) {
+            Annotation ann = (Annotation) object;
+            Logger.debug("Annotation method is " + ann.annotationType().getName());
+            if (ann.annotationType().getName()
+                    .equals("play.classloading.enhancers.PropertiesEnhancer$PlayPropertyAccessor")) {
+                Logger.debug("Method " + ctMethod.getName() + " has be enhanced by propertiesEnhancer");
+                return true;
+            }
+        }
+        Logger.debug("Method " + ctMethod.getName() + " has not be enhance by propertiesEnhancer");
+        return false;
     }
 
 }

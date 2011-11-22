@@ -1,5 +1,7 @@
 package play.modules.neo4j;
 
+import org.neo4j.graphdb.GraphDatabaseService;
+
 import play.Logger;
 import play.Play;
 import play.Play.Mode;
@@ -23,6 +25,7 @@ public class Neo4jPlugin extends PlayPlugin {
         Logger.info("Starting neo4j database");
         if (Neo4j.db() == null) {
             Neo4j.initialize();
+            registerShutdownHook(Neo4j.db());
         }
     }
 
@@ -44,9 +47,25 @@ public class Neo4jPlugin extends PlayPlugin {
     public void onRoutesLoaded() {
         if (Play.mode == Mode.DEV) {
             // adding some route for
-            Logger.debug("adding routes for CAS Mock Server");
+            Logger.debug("adding routes for Neo4j plugin");
             Router.addRoute("GET", "/@neo4j/import", "play.modules.neoj4.Import.execute");
         }
+    }
+
+    /**
+     * Registers a shutdown hook for the Neo4j instance so that it shuts down nicely when the VM exits (even if you
+     * "Ctrl-C" the running example before it's completed)
+     * 
+     * @param graphDb
+     */
+    private static void registerShutdownHook(final GraphDatabaseService graphDb) {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+
+            @Override
+            public void run() {
+                graphDb.shutdown();
+            }
+        });
     }
 
 }

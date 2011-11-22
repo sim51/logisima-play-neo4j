@@ -3,6 +3,7 @@ package play.modules.neo4j.model;
 import java.lang.reflect.Constructor;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 import play.modules.neo4j.annotation.Neo4jEntity;
 import play.modules.neo4j.annotation.Neo4jIndex;
@@ -23,18 +24,24 @@ public abstract class Neo4jModel {
      * Unique id autogenerate by the factory
      */
     @Neo4jIndex
-    public Long        id;
+    public Long       key;
 
     /**
      * underlying node of the model.
      */
-    private final Node underlyingNode;
+    public final Node underlyingNode;
 
     /**
      * Default constructor for creation.
      */
     public Neo4jModel() {
-        this.underlyingNode = Neo4j.db().createNode();
+        Transaction tx = Neo4j.db().beginTx();
+        try {
+            this.underlyingNode = Neo4j.db().createNode();
+            tx.success();
+        } finally {
+            tx.finish();
+        }
     }
 
     /**
@@ -49,8 +56,8 @@ public abstract class Neo4jModel {
     /**
      * Getter for id.
      */
-    public Long getId() {
-        return (Long) this.underlyingNode.getProperty("id");
+    public Long getKey() {
+        return (Long) this.underlyingNode.getProperty("key", null);
     }
 
     /**
@@ -58,8 +65,9 @@ public abstract class Neo4jModel {
      * 
      * @param id
      */
-    public void setId(Long id) {
-        this.underlyingNode.setProperty("id", id);
+    public void setKey(Long id) {
+        this.key = id;
+        this.underlyingNode.setProperty("key", id);
     }
 
     /**
@@ -90,6 +98,21 @@ public abstract class Neo4jModel {
                 throw new Neo4jReflectionException(e);
             }
         }
-        return null;
+        return this;
+    }
+
+    /**
+     * Method to delete orphelan node ... when garbage collector is running.
+     */
+    protected void finalize() throws Throwable {
+        if (this.underlyingNode.hasRelationship() == false) {
+            Transaction tx = Neo4j.db().beginTx();
+            try {
+                this.underlyingNode.delete();
+                tx.success();
+            } finally {
+                tx.finish();
+            }
+        }
     }
 }
