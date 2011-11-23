@@ -2,9 +2,11 @@ package play.modules.neo4j.util;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.server.WrappingNeoServerBootstrapper;
 
 import play.Logger;
 import play.Play;
+import play.Play.Mode;
 import play.modules.neo4j.exception.Neo4jException;
 
 /**
@@ -16,7 +18,8 @@ import play.modules.neo4j.exception.Neo4jException;
  */
 public class Neo4j {
 
-    private static ThreadLocal<GraphDatabaseService> graphDb = new ThreadLocal<GraphDatabaseService>();
+    private static ThreadLocal<GraphDatabaseService>          graphDb        = new ThreadLocal<GraphDatabaseService>();
+    private static ThreadLocal<WrappingNeoServerBootstrapper> bootstrapperDb = new ThreadLocal<WrappingNeoServerBootstrapper>();
 
     /**
      * Method to create graphDb instance (start the server).
@@ -30,6 +33,11 @@ public class Neo4j {
         String DBPath = Play.configuration.getProperty("neo4j.path");
         Logger.debug("Neo4j database path is :" + DBPath);
         EmbeddedGraphDatabase graph = new EmbeddedGraphDatabase(DBPath);
+        if (Play.mode == Mode.DEV) {
+            WrappingNeoServerBootstrapper bootstrapper = new WrappingNeoServerBootstrapper(graph);
+            bootstrapper.start();
+            bootstrapperDb.set(bootstrapper);
+        }
         graphDb.set(graph);
     }
 
@@ -37,9 +45,14 @@ public class Neo4j {
      * Methode to destroy all reference.
      */
     public static void destroy() {
-        if (graphDb.get() != null) {
+        if (Play.mode == Mode.DEV) {
+            if (bootstrapperDb.get() != null) {
+                bootstrapperDb.get().stop();
+                bootstrapperDb.remove();
+            }
+        }
+        else {
             db().shutdown();
-            graphDb.remove();
         }
     }
 

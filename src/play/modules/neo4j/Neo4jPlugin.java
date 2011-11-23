@@ -48,7 +48,7 @@ public class Neo4jPlugin extends PlayPlugin {
         if (Play.mode == Mode.DEV) {
             // adding some route for
             Logger.debug("adding routes for Neo4j plugin");
-            Router.addRoute("GET", "/@neo4j/import", "play.modules.neoj4.Import.execute");
+            Router.addRoute("GET", "/@neo4j/console", "controllers.module.neo4j.Neo4jController.console");
         }
     }
 
