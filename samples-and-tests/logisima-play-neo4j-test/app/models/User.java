@@ -11,6 +11,5 @@ public class User extends Neo4jModel {
     public String email;
     public String firstname;
     public String lastname;
-    public String facebookAccount;
 
 }
