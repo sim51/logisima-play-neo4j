@@ -21,17 +21,27 @@ import play.modules.neo4j.model.Neo4jModel;
 public abstract class AbstractNeo4jFactory {
 
     /**
-     * Reference node for all user.
+     * Reference node for all object.
      */
     private static Node             referenceNode;
 
+    /**
+     * Define the relationshipType between the root node, and the model reference node.
+     */
     private static RelationshipType root2ref;
+
+    /**
+     * Define the relationshipType between the model reference node and models.
+     */
     private static RelationshipType ref2node;
 
+    /**
+     * Name of the key property on each object.
+     */
     public final static String      NODE_KEY_COUNTER = "KEY_COUNTER";
 
     /**
-     * Constructor of the User Factory.
+     * Constructor of the Abstract Factory.
      */
     public AbstractNeo4jFactory() {
         GraphDatabaseService graphDb = Neo4j.db();
@@ -80,7 +90,7 @@ public abstract class AbstractNeo4jFactory {
     }
 
     /**
-     * Method to get the next ID for Restaurent object.
+     * Method to get the next ID for an object.
      * 
      * @return
      */
@@ -101,6 +111,20 @@ public abstract class AbstractNeo4jFactory {
             tx.finish();
         }
         return counter;
+    }
+
+    /**
+     * Method to retrieve a node by a key.
+     * 
+     * @param key the idenfifier of the node
+     * @param indexName Name of the index on wich to search
+     * @return
+     */
+    public Node getByKey(Long key, String indexName) {
+        indexName = indexName.toUpperCase();
+        Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
+        Node node = indexNode.get("key", key).getSingle();
+        return node;
     }
 
     /**

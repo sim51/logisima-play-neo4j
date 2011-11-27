@@ -26,6 +26,8 @@ public class Neo4jModelEnhancer extends Enhancer {
     @Override
     public void enhanceThisClass(ApplicationClass applicationClass) throws Exception {
         CtClass ctClass = makeClass(applicationClass);
+        String entityName = ctClass.getName();
+        Logger.debug("Enhance class " + entityName);
 
         // Only enhance Neo4jModel classes.
         if (!ctClass.subtypeOf(classPool.get("play.modules.neo4j.model.Neo4jModel"))) {
@@ -50,9 +52,6 @@ public class Neo4jModelEnhancer extends Enhancer {
             Logger.error(e, "Error in PropertiesEnhancer");
             throw new UnexpectedException("Error in PropertiesEnhancer", e);
         }
-
-        String entityName = ctClass.getName();
-        Logger.debug("Enhance class " + entityName);
 
         // for all field, we add getter / setter
         for (CtField ctField : ctClass.getDeclaredFields()) {
@@ -119,6 +118,35 @@ public class Neo4jModelEnhancer extends Enhancer {
                 throw new UnexpectedException("Error in PropertiesEnhancer", e);
             }
         }
+        
+        
+        // Adding save() method
+        Logger.debug("Adding save() method for class " + entityName);
+        //@formatter:off
+        String codeSave =  "public " + entityName + " save() {" +
+                                 entityName + " model =  (" + entityName+ ")this.save();" +
+                                 "return model;" +
+                            "}";
+        //@formatter:on
+        Logger.debug(codeSave);
+        CtMethod saveMethod = CtMethod.make(codeSave, ctClass);
+        ctClass.addMethod(saveMethod);
+
+        // Adding getByKey() method
+        Logger.debug("Adding getByKey() method for class " + entityName);
+        //@formatter:off
+        String codeGetByKey =  "public static " + entityName + " getByKey(Long key) {" +
+                                    "play.modules.neo4j.util.AbstractNeo4jFactory factory = getFactory();" +
+                                    "org.neo4j.graphdb.Node node = factory.getByKey(key, \"" + entityName + "_KEY\");" +
+                                    entityName + " model = new " + entityName + "();" +
+                                    "model.setNode(node);" +
+                                    "return model;" +
+                                "}";
+        //@formatter:on
+        Logger.debug(codeGetByKey);
+        CtMethod getByKeyMethod = CtMethod.make(codeGetByKey, ctClass);
+        ctClass.addMethod(getByKeyMethod);
+
         // Done.
         applicationClass.enhancedByteCode = ctClass.toBytecode();
         ctClass.defrost();

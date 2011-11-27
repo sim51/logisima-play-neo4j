@@ -94,25 +94,37 @@ public abstract class Neo4jModel {
     }
 
     /**
-     * Save/update and index an Neo4j node.
+     * Save/update and index an Neo4j node. This method is private. @see <code>save()</code> method into enhancer.
      * 
      * @return
      * @throws Neo4jReflectionException
      */
-    public Neo4jModel save() throws Neo4jReflectionException {
+    private Neo4jModel save() throws Neo4jReflectionException {
+        AbstractNeo4jFactory factory = getFactory();
+        factory.saveAndIndex(this);
+        return this;
+    }
+
+    /**
+     * Private method to retrieve the factory of this model class.
+     * 
+     * @return
+     * @throws Neo4jReflectionException
+     */
+    private AbstractNeo4jFactory getFactory() throws Neo4jReflectionException {
+        AbstractNeo4jFactory factory = null;
         Neo4jEntity entity = this.getClass().getAnnotation(Neo4jEntity.class);
         if (entity != null) {
             try {
                 Class<?> factoryClass = entity.value();
                 Constructor ct;
                 ct = factoryClass.getConstructor();
-                AbstractNeo4jFactory factory = (AbstractNeo4jFactory) ct.newInstance();
-                factory.saveAndIndex(this);
+                factory = (AbstractNeo4jFactory) ct.newInstance();
             } catch (Exception e) {
                 throw new Neo4jReflectionException(e);
             }
         }
-        return this;
+        return factory;
     }
 
     /**
