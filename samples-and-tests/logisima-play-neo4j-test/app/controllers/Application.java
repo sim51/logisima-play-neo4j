@@ -22,7 +22,7 @@ public class Application extends Controller {
         } catch (Neo4jException e) {
             Logger.error(e.getMessage(), e);
         }
-        render(user);
+        index();
     }
 
     public static void getByKey() {

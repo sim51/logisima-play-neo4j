@@ -3,6 +3,7 @@ package play.modules.neo4j.util;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 
@@ -71,20 +72,26 @@ public class Neo4j {
      * Method to reinitialize the graph database.
      */
     public static void clear() {
-        // for all node, we first delete all relation, and after we delete the node
-        for (Node node : db().getAllNodes()) {
-            for (Relationship relation : node.getRelationships()) {
-                relation.delete();
-            }
-            // if node is the reference, we doesn't delete it, but we reset ist properties
-            if (node.getGraphDatabase().getReferenceNode().equals(node)) {
-                for (String property : node.getPropertyKeys()) {
-                    node.removeProperty(property);
+        Transaction tx = Neo4j.db().beginTx();
+        try {
+            // for all node, we first delete all relation, and after we delete the node
+            for (Node node : db().getAllNodes()) {
+                for (Relationship relation : node.getRelationships()) {
+                    relation.delete();
+                }
+                // if node is the reference, we doesn't delete it, but we reset its properties
+                if (node.getGraphDatabase().getReferenceNode().equals(node)) {
+                    for (String property : node.getPropertyKeys()) {
+                        node.removeProperty(property);
+                    }
+                }
+                else {
+                    node.delete();
                 }
             }
-            else {
-                node.delete();
-            }
+            tx.success();
+        } finally {
+            tx.finish();
         }
     }
 

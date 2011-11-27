@@ -8,10 +8,15 @@
 /.settings/
 /tmp/
 /bin/
+/lib/play-neo4j.jar
 /samples-and-tests/logisima-play-neo4j-test/eclipse/
 /samples-and-tests/logisima-play-neo4j-test/logs/
 /samples-and-tests/logisima-play-neo4j-test/tmp/
 /samples-and-tests/logisima-play-neo4j-test/db
 /samples-and-tests/logisima-play-neo4j-test/test-result/
 /samples-and-tests/logisima-play-neo4j-test/test/play/
+/samples-and-tests/logisima-play-neo4j-test/.classpath
+/samples-and-tests/logisima-play-neo4j-test/bin/
+/samples-and-tests/logisima-play-neo4j-test/dbTest/
+
 

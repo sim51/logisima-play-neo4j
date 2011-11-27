@@ -124,7 +124,7 @@ public class Neo4jModelEnhancer extends Enhancer {
         Logger.debug("Adding getByKey() method for class " + entityName);
         //@formatter:off
         String codeGetByKey =  "public static " + entityName + " getByKey(Long key)  throws play.modules.neo4j.exception.Neo4jException  {" +
-                                    "return getByKey(key, \"" + entityName + "\");" +
+                                    "return (" + entityName + ")getByKey(key, \"" + entityName + "\");" +
                                 "}";
         //@formatter:on
         Logger.debug(codeGetByKey);
