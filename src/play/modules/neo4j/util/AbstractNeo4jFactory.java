@@ -14,8 +14,8 @@ import org.neo4j.graphdb.index.Index;
 import play.Logger;
 import play.modules.neo4j.annotation.Neo4jFactory;
 import play.modules.neo4j.annotation.Neo4jIndex;
+import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.exception.Neo4jException;
-import play.modules.neo4j.exception.Neo4jReflectionException;
 import play.modules.neo4j.model.Neo4jModel;
 
 public abstract class AbstractNeo4jFactory {
@@ -64,7 +64,7 @@ public abstract class AbstractNeo4jFactory {
             }
         }
         else {
-            throw new Neo4jException(
+            throw new Neo4jPlayException(
                     "Factory class that extends AbstractNeo4jFactory must have the annotation @Neo4jFactory correctly configure !!!");
         }
 
@@ -132,11 +132,11 @@ public abstract class AbstractNeo4jFactory {
      * 
      * @param nodeWrapper
      * @return
-     * @throws Neo4jReflectionException
+     * @throws Neo4jException
      * @throws IllegalAccessException
      * @throws IllegalArgumentException
      */
-    public Neo4jModel saveAndIndex(Neo4jModel nodeWrapper) throws Neo4jReflectionException {
+    public Neo4jModel saveAndIndex(Neo4jModel nodeWrapper) throws Neo4jException {
         Transaction tx = Neo4j.db().beginTx();
         try {
             // if there is no underluingnode, we generate an auto key
@@ -180,9 +180,9 @@ public abstract class AbstractNeo4jFactory {
 
             tx.success();
         } catch (IllegalArgumentException e) {
-            throw new Neo4jReflectionException(e);
+            throw new Neo4jException(e);
         } catch (IllegalAccessException e) {
-            throw new Neo4jReflectionException(e);
+            throw new Neo4jException(e);
         } finally {
             tx.finish();
         }

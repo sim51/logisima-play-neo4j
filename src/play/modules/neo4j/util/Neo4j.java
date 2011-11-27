@@ -9,7 +9,7 @@ import org.neo4j.server.WrappingNeoServerBootstrapper;
 import play.Logger;
 import play.Play;
 import play.Play.Mode;
-import play.modules.neo4j.exception.Neo4jException;
+import play.modules.neo4j.exception.Neo4jPlayException;
 
 /**
  * Class to retrieve a valid <code>GraphDatabaseService</code> for application (<code>graphDb</code> is in a
@@ -26,11 +26,11 @@ public class Neo4j {
     /**
      * Method to create graphDb instance (start the server).
      * 
-     * @throws Neo4jException
+     * @throws Neo4jPlayException
      */
-    public static void initialize() throws Neo4jException {
+    public static void initialize() throws Neo4jPlayException {
         if (graphDb.get() != null) {
-            throw new Neo4jException("The graphDb is already initialize.");
+            throw new Neo4jPlayException("The graphDb is already initialize.");
         }
         String DBPath = Play.configuration.getProperty("neo4j.path");
         Logger.debug("Neo4j database path is :" + DBPath);

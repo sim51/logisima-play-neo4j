@@ -9,3 +9,9 @@
 /tmp/
 /bin/
 /samples-and-tests/logisima-play-neo4j-test/eclipse/
+/samples-and-tests/logisima-play-neo4j-test/logs/
+/samples-and-tests/logisima-play-neo4j-test/tmp/
+/samples-and-tests/logisima-play-neo4j-test/db
+/samples-and-tests/logisima-play-neo4j-test/test-result/
+/samples-and-tests/logisima-play-neo4j-test/test/play/
+

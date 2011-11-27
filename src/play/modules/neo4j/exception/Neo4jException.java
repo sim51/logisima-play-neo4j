@@ -1,27 +1,38 @@
 package play.modules.neo4j.exception;
 
-import play.exceptions.PlayException;
-
 /**
- * Neo4j Exception class (it's a runtime exception by extending <code>PlayException</code>
+ * Neo4j Exception class.
  * 
  * @author bsimard
  * 
  */
-public class Neo4jException extends PlayException {
+public class Neo4jException extends Exception {
 
+    /**
+     * Construct a <code>Neo4jException</code> with the specified detail message.
+     * 
+     * @param msg the detail message
+     */
     public Neo4jException(String message) {
         super(message);
     }
 
-    @Override
-    public String getErrorTitle() {
-        return "Neo4j Exception";
+    /**
+     * Construct a <code>Neo4jException</code> with the specified detail message and nested exception.
+     * 
+     * @param msg the detail message
+     * @param cause the nested exception
+     */
+    public Neo4jException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    @Override
-    public String getErrorDescription() {
-        return getMessage();
+    /**
+     * Construct a <code>Neo4jException</code> with the nested exception.
+     * 
+     * @param cause the nested exception
+     */
+    public Neo4jException(Throwable cause) {
+        super(cause);
     }
-
 }

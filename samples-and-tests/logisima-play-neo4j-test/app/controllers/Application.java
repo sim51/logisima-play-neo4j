@@ -2,7 +2,7 @@ package controllers;
 
 import models.User;
 import play.Logger;
-import play.modules.neo4j.exception.Neo4jReflectionException;
+import play.modules.neo4j.exception.Neo4jException;
 import play.mvc.Controller;
 
 public class Application extends Controller {
@@ -19,7 +19,7 @@ public class Application extends Controller {
         user.login = "bsimard";
         try {
             user.save();
-        } catch (Neo4jReflectionException e) {
+        } catch (Neo4jException e) {
             Logger.error(e.getMessage(), e);
         }
         render(user);
@@ -33,7 +33,7 @@ public class Application extends Controller {
         user.login = "bsimard";
         try {
             user.save();
-        } catch (Neo4jReflectionException e) {
+        } catch (Neo4jException e) {
             Logger.error(e.getMessage(), e);
         }
         render();
@@ -47,7 +47,7 @@ public class Application extends Controller {
         user.login = "bsimard";
         try {
             user.save();
-        } catch (Neo4jReflectionException e) {
+        } catch (Neo4jException e) {
             Logger.error(e.getMessage(), e);
         }
         render();
@@ -61,7 +61,7 @@ public class Application extends Controller {
         user.login = "bsimard";
         try {
             user.save();
-        } catch (Neo4jReflectionException e) {
+        } catch (Neo4jException e) {
             Logger.error(e.getMessage(), e);
         }
         render();

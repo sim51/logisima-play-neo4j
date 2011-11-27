@@ -7,7 +7,8 @@ import org.neo4j.graphdb.Transaction;
 
 import play.modules.neo4j.annotation.Neo4jEntity;
 import play.modules.neo4j.annotation.Neo4jIndex;
-import play.modules.neo4j.exception.Neo4jReflectionException;
+import play.modules.neo4j.exception.Neo4jException;
+import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.util.AbstractNeo4jFactory;
 import play.modules.neo4j.util.Neo4j;
 
@@ -18,6 +19,7 @@ import play.modules.neo4j.util.Neo4j;
  * @author bsimard
  * 
  */
+@SuppressWarnings("unchecked")
 public abstract class Neo4jModel {
 
     /**
@@ -94,26 +96,62 @@ public abstract class Neo4jModel {
     }
 
     /**
-     * Save/update and index an Neo4j node. This method is private. @see <code>save()</code> method into enhancer.
+     * Save/update and index an Neo4j node. This method is private. @see <code>save()</code> method.
      * 
      * @return
-     * @throws Neo4jReflectionException
+     * @throws Neo4jException
      */
-    private Neo4jModel save() throws Neo4jReflectionException {
-        AbstractNeo4jFactory factory = getFactory();
+    private void _save() throws Neo4jException {
+        AbstractNeo4jFactory factory = getFactory(this.getClass());
         factory.saveAndIndex(this);
-        return this;
+        this.shouldBeSave = Boolean.FALSE;
+    }
+
+    /**
+     * Save method for Neo4jModel.
+     * 
+     * @return
+     * @throws Neo4jException
+     */
+    public <T extends Neo4jModel> T save() throws Neo4jException {
+        this._save();
+        return (T) this;
+    }
+
+    /**
+     * Retrieve a node by it's key.
+     * 
+     * @return
+     * @throws Neo4jException
+     */
+    protected static <T extends Neo4jModel> T getByKey(Long key, String className) throws Neo4jException {
+        Neo4jModel nodeWrapper = null;
+        try {
+            Class clazz = Class.forName(className);
+            AbstractNeo4jFactory factory = getFactory(clazz);
+            String indexName = clazz.getSimpleName() + "_KEY";
+            Node node = factory.getByKey(key, indexName);
+
+            Constructor c;
+            c = clazz.getDeclaredConstructor();
+            c.setAccessible(true);
+            nodeWrapper = (Neo4jModel) c.newInstance();
+            nodeWrapper.setNode(node);
+        } catch (Exception e) {
+            throw new Neo4jPlayException("Error when create a Neo4jModel by reflection :" + e.getCause());
+        }
+        return (T) nodeWrapper;
     }
 
     /**
      * Private method to retrieve the factory of this model class.
      * 
      * @return
-     * @throws Neo4jReflectionException
+     * @throws Neo4jException
      */
-    private AbstractNeo4jFactory getFactory() throws Neo4jReflectionException {
+    protected static AbstractNeo4jFactory getFactory(Class clazz) throws Neo4jException {
         AbstractNeo4jFactory factory = null;
-        Neo4jEntity entity = this.getClass().getAnnotation(Neo4jEntity.class);
+        Neo4jEntity entity = (Neo4jEntity) clazz.getAnnotation(Neo4jEntity.class);
         if (entity != null) {
             try {
                 Class<?> factoryClass = entity.value();
@@ -121,7 +159,7 @@ public abstract class Neo4jModel {
                 ct = factoryClass.getConstructor();
                 factory = (AbstractNeo4jFactory) ct.newInstance();
             } catch (Exception e) {
-                throw new Neo4jReflectionException(e);
+                throw new Neo4jException(e);
             }
         }
         return factory;

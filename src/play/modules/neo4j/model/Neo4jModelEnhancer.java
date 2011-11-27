@@ -77,12 +77,12 @@ public class Neo4jModelEnhancer extends Enhancer {
                         Logger.debug("Adding getter  " + getter + " for class " + entityName);
                         //@formatter:off
                         String code = "public " + ctField.getType().getName() + " " + getter + "() {" +
-                        		            "if(this.shouldBeSave == Boolean.TRUE){" +
-                        		                "return " + ctField.getName() + ";" +
-                        		            "}else{" +
-                    		                    "return ((" + ctField.getType().getName() + ") this.underlyingNode.getProperty(\""+ ctField.getName() + "\", null));" +
-                    		                "}" +
-        		                		"}";
+                                            "if(this.shouldBeSave == Boolean.TRUE){" +
+                                                "return " + ctField.getName() + ";" +
+                                            "}else{" +
+                                                "return ((" + ctField.getType().getName() + ") this.underlyingNode.getProperty(\""+ ctField.getName() + "\", null));" +
+                                            "}" +
+                                        "}";
                         //@formatter:on
                         Logger.debug(code);
                         CtMethod getMethod = CtMethod.make(code, ctClass);
@@ -107,8 +107,8 @@ public class Neo4jModelEnhancer extends Enhancer {
                         CtMethod setMethod = CtMethod
                                 .make("public void " + setter + "(" + ctField.getType().getName() + " value) { " +
                                             "this."  + ctField.getName() + " = value;" +
-                                		    "this.shouldBeSave = Boolean.TRUE;" +
-                    		          "}", ctClass);
+                                            "this.shouldBeSave = Boolean.TRUE;" +
+                                      "}", ctClass);
                         //formatter:on
                         ctClass.addMethod(setMethod);
                     }
@@ -120,27 +120,11 @@ public class Neo4jModelEnhancer extends Enhancer {
         }
         
         
-        // Adding save() method
-        Logger.debug("Adding save() method for class " + entityName);
-        //@formatter:off
-        String codeSave =  "public " + entityName + " save() {" +
-                                 entityName + " model =  (" + entityName+ ")this.save();" +
-                                 "return model;" +
-                            "}";
-        //@formatter:on
-        Logger.debug(codeSave);
-        CtMethod saveMethod = CtMethod.make(codeSave, ctClass);
-        ctClass.addMethod(saveMethod);
-
         // Adding getByKey() method
         Logger.debug("Adding getByKey() method for class " + entityName);
         //@formatter:off
-        String codeGetByKey =  "public static " + entityName + " getByKey(Long key) {" +
-                                    "play.modules.neo4j.util.AbstractNeo4jFactory factory = getFactory();" +
-                                    "org.neo4j.graphdb.Node node = factory.getByKey(key, \"" + entityName + "_KEY\");" +
-                                    entityName + " model = new " + entityName + "();" +
-                                    "model.setNode(node);" +
-                                    "return model;" +
+        String codeGetByKey =  "public static " + entityName + " getByKey(Long key)  throws play.modules.neo4j.exception.Neo4jException  {" +
+                                    "return getByKey(key, \"" + entityName + "\");" +
                                 "}";
         //@formatter:on
         Logger.debug(codeGetByKey);
