@@ -12,6 +12,6 @@ You must have a Factory class that extend AbstractFactory and specify relation b
 
 TODO:
 * import / export from an YML format
-* adding method getByKey into AbstractFactory
-* Adding TU into test application
+* adding method getByKey into AbstractFactory - DONE
+* Adding TU into test application - IN PROGRESS
 * Adding documentation
