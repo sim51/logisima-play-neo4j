@@ -59,7 +59,12 @@ public abstract class Neo4jModel {
      * Getter for id.
      */
     public Long getKey() {
-        return (Long) this.node.getProperty("key", null);
+        if (this.node != null && this.node.getProperty("key", null) != null) {
+            return (Long) this.node.getProperty("key", null);
+        }
+        else {
+            return this.key;
+        }
     }
 
     /**
@@ -99,7 +104,6 @@ public abstract class Neo4jModel {
     /**
      * Save/update and index an Neo4j node. This method is private. @see <code>save()</code> method.
      * 
-     * @return
      * @throws Neo4jException
      */
     private void _save() throws Neo4jException {
@@ -119,6 +123,29 @@ public abstract class Neo4jModel {
     public <T extends Neo4jModel> T save() throws Neo4jException {
         this._save();
         return (T) this;
+    }
+
+    /**
+     * Save method for Neo4jModel.
+     * 
+     * @return the saved object.
+     * @throws Neo4jException
+     */
+    public <T extends Neo4jModel> T delete() throws Neo4jException {
+        this._delete();
+        return (T) this;
+    }
+
+    /**
+     * Delete an Neo4j node. This method is private. @see <code>delete()</code> method.
+     * 
+     * @return the deleted object
+     * @throws Neo4jException
+     */
+    private void _delete() throws Neo4jException {
+        AbstractNeo4jFactory factory = getFactory(this.getClass());
+        factory.delete(this);
+        this.node = null;
     }
 
     /**
@@ -147,6 +174,13 @@ public abstract class Neo4jModel {
         return (T) nodeWrapper;
     }
 
+    /**
+     * Public method to retrieve a node by its key. @see Neo4jModelEnhancer (that oveeride this method ...)
+     * 
+     * @param key
+     * @return
+     * @throws Neo4jException
+     */
     public static <T extends Neo4jModel> T getByKey(Long key) throws Neo4jException {
         throw new UnsupportedOperationException("Please annotate correctly your neo4j model & factory.");
     }

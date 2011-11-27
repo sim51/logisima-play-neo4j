@@ -77,10 +77,10 @@ public class Neo4jModelEnhancer extends Enhancer {
                         Logger.debug("Adding getter  " + getter + " for class " + entityName);
                         //@formatter:off
                         String code = "public " + ctField.getType().getName() + " " + getter + "() {" +
-                                            "if(this.shouldBeSave == Boolean.TRUE){" +
-                                                "return " + ctField.getName() + ";" +
-                                            "}else{" +
+                                            "if(this.shouldBeSave == Boolean.FALSE && this.node != null){" +
                                                 "return ((" + ctField.getType().getName() + ") this.node.getProperty(\""+ ctField.getName() + "\", null));" +
+                                            "}else{" +
+                                                "return " + ctField.getName() + ";" +
                                             "}" +
                                         "}";
                         //@formatter:on

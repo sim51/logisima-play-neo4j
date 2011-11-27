@@ -1,6 +1,8 @@
 package play.modules.neo4j.util;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -90,6 +92,156 @@ public abstract class AbstractNeo4jFactory {
     }
 
     /**
+     * Method to retrieve a node by a key.
+     * 
+     * @param key the idenfifier of the node
+     * @param indexName Name of the index on wich to search
+     * @return
+     */
+    public Node getByKey(Long key, String indexName) {
+        indexName = indexName.toUpperCase();
+        Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
+        Node node = indexNode.get("key", key).getSingle();
+        return node;
+    }
+
+    /**
+     * Method to save/update and index a node.
+     * 
+     * @param nodeWrapper to save
+     * @return the save or update node
+     * @throws Neo4jException
+     * @throws IllegalAccessException
+     * @throws IllegalArgumentException
+     */
+    public Neo4jModel saveAndIndex(Neo4jModel nodeWrapper) throws Neo4jException {
+        // initialisation of the method
+        Transaction tx = Neo4j.db().beginTx();
+        Boolean isNewNode = Boolean.FALSE;
+        Map oldValues = new HashMap<String, Object>();
+        if (nodeWrapper.getNode() == null) {
+            isNewNode = Boolean.TRUE;
+        }
+
+        try {
+            // if is a new objetc (doesn't have a node value), we create the node & generate an auto key
+            if (isNewNode) {
+                nodeWrapper.setKey(getNextId());
+                nodeWrapper.setNode(Neo4j.db().createNode());
+            }
+
+            // setting properties node and stock oldValue into an hashmap for indexes
+            for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
+                if (!field.getName().equals("node") && !field.getName().equals("shouldBeSave")
+                        && field.get(nodeWrapper) != null) {
+                    Object oldValue = nodeWrapper.getNode().getProperty(field.getName(), null);
+                    if (oldValue != null) {
+
+                    }
+                    nodeWrapper.getNode().setProperty(field.getName(), field.get(nodeWrapper));
+                }
+            }
+
+            // create the reference 2 node relationship
+            referenceNode.createRelationshipTo(nodeWrapper.getNode(), this.ref2node);
+
+            // create indexes ...
+            for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
+
+                // create an index on the field if there is the annotaton and field value is not null
+                String indexName = getIndexName(nodeWrapper.getClass().getSimpleName(), field);
+                if (indexName != null && field.get(nodeWrapper) != null) {
+
+                    // create the index
+                    Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
+                    // here we have to remove the index when it's an update, so we take a look at the oldValues map
+                    if (oldValues.get(field.getName()) != null) {
+                        indexNode.remove(nodeWrapper.getNode(), field.getName(), oldValues.get(field.getName())
+                                .toString());
+                    }
+                    indexNode.add(nodeWrapper.getNode(), field.getName(), field.get(nodeWrapper).toString());
+                }
+            }
+
+            tx.success();
+        } catch (IllegalArgumentException e) {
+            throw new Neo4jException(e);
+        } catch (IllegalAccessException e) {
+            throw new Neo4jException(e);
+        } finally {
+            tx.finish();
+        }
+        return nodeWrapper;
+    }
+
+    /**
+     * Method to delete a node. If it still have a relationship (otherwise than ref2node one), this method throw a
+     * runtime exception.
+     * 
+     * @param nodeWrapper to delete
+     * @return the deleted object
+     * @throws Neo4jException
+     */
+    public Neo4jModel delete(Neo4jModel nodeWrapper) throws Neo4jException {
+        return _delete(nodeWrapper, Boolean.FALSE);
+    }
+
+    /**
+     * Method to delete a node, also when it still have relationship. Use this method carefully !
+     * 
+     * @param nodeWrapper to delete
+     * @return the object deleted
+     * @throws Neo4jException
+     */
+    public Neo4jModel forceDelete(Neo4jModel nodeWrapper) throws Neo4jException {
+        return _delete(nodeWrapper, Boolean.TRUE);
+    }
+
+    /**
+     * General(private) method to delete a node.
+     * 
+     * @param nodeWrapper
+     * @param forceDelete if this param is set to TRUE, then all relationship will be deleted before we delete the node.
+     * @return The object that have been deleted.
+     * @throws Neo4jException
+     */
+    private Neo4jModel _delete(Neo4jModel nodeWrapper, Boolean forceDelete) throws Neo4jException {
+        Transaction tx = Neo4j.db().beginTx();
+        try {
+            Node node = nodeWrapper.getNode();
+
+            if (!forceDelete) {
+                // delete the ref2node relationship
+                for (Relationship relation : node.getRelationships(ref2node, Direction.INCOMING)) {
+                    relation.delete();
+                }
+            }
+            else {
+                // for all other relationship if foreceDelete is set to true
+                for (Relationship relation : node.getRelationships()) {
+                    relation.delete();
+                }
+            }
+
+            // delete entity
+            node.delete();
+            // delete indexes
+            for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
+                // is there an index on the field ?
+                String indexName = getIndexName(nodeWrapper.getClass().getSimpleName(), field);
+                if (indexName != null) {
+                    Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
+                    indexNode.remove(nodeWrapper.getNode());
+                }
+            }
+            tx.success();
+        } finally {
+            tx.finish();
+        }
+        return nodeWrapper;
+    }
+
+    /**
      * Method to get the next ID for an object.
      * 
      * @return
@@ -113,79 +265,18 @@ public abstract class AbstractNeo4jFactory {
         return counter;
     }
 
-    /**
-     * Method to retrieve a node by a key.
-     * 
-     * @param key the idenfifier of the node
-     * @param indexName Name of the index on wich to search
-     * @return
-     */
-    public Node getByKey(Long key, String indexName) {
-        indexName = indexName.toUpperCase();
-        Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
-        Node node = indexNode.get("key", key).getSingle();
-        return node;
-    }
-
-    /**
-     * Method to save/update and index a node.
-     * 
-     * @param nodeWrapper
-     * @return
-     * @throws Neo4jException
-     * @throws IllegalAccessException
-     * @throws IllegalArgumentException
-     */
-    public Neo4jModel saveAndIndex(Neo4jModel nodeWrapper) throws Neo4jException {
-        Transaction tx = Neo4j.db().beginTx();
-        try {
-            // if there is no underluingnode, we generate an auto key
-            if (nodeWrapper.getNode() == null) {
-                nodeWrapper.setKey(getNextId());
+    private String getIndexName(String className, java.lang.reflect.Field field) {
+        String indexName = null;
+        Neo4jIndex nodeIndex = field.getAnnotation(Neo4jIndex.class);
+        if (nodeIndex != null) {
+            // get the name of the index
+            indexName = nodeIndex.value();
+            if (indexName.equals("")) {
+                indexName = className + "_" + field.getName();
+                indexName = indexName.toUpperCase();
             }
-
-            // if nodeWrapper is new (does'nt have a node value), we create the node
-            if (nodeWrapper.getNode() == null) {
-                nodeWrapper.setNode(Neo4j.db().createNode());
-                for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
-                    if (!field.getName().equals("node") && !field.getName().equals("shouldBeSave")
-                            && field.get(nodeWrapper) != null) {
-                        nodeWrapper.getNode().setProperty(field.getName(), field.get(nodeWrapper));
-                    }
-                }
-            }
-
-            // create the reference 2 node relationship
-            referenceNode.createRelationshipTo(nodeWrapper.getNode(), this.ref2node);
-
-            // create indexes ...
-            for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
-
-                // create an index on the field ?
-                Neo4jIndex nodeIndex = field.getAnnotation(Neo4jIndex.class);
-                if (nodeIndex != null) {
-
-                    // get the name of the index
-                    String indexName = nodeIndex.value();
-                    if (indexName.equals("")) {
-                        indexName = nodeWrapper.getClass().getSimpleName() + "_" + field.getName();
-                        indexName = indexName.toUpperCase();
-                    }
-
-                    // create the index
-                    Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
-                    indexNode.add(nodeWrapper.getNode(), field.getName(), field.get(nodeWrapper).toString());
-                }
-            }
-
-            tx.success();
-        } catch (IllegalArgumentException e) {
-            throw new Neo4jException(e);
-        } catch (IllegalAccessException e) {
-            throw new Neo4jException(e);
-        } finally {
-            tx.finish();
         }
-        return nodeWrapper;
+        Logger.debug("Index name for class " + className + " and field " + field.getName() + " is " + indexName);
+        return indexName;
     }
 }
