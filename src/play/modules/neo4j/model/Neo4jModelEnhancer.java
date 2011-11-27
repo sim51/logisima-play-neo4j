@@ -80,7 +80,7 @@ public class Neo4jModelEnhancer extends Enhancer {
                                             "if(this.shouldBeSave == Boolean.TRUE){" +
                                                 "return " + ctField.getName() + ";" +
                                             "}else{" +
-                                                "return ((" + ctField.getType().getName() + ") this.underlyingNode.getProperty(\""+ ctField.getName() + "\", null));" +
+                                                "return ((" + ctField.getType().getName() + ") this.node.getProperty(\""+ ctField.getName() + "\", null));" +
                                             "}" +
                                         "}";
                         //@formatter:on
@@ -123,8 +123,8 @@ public class Neo4jModelEnhancer extends Enhancer {
         // Adding getByKey() method
         Logger.debug("Adding getByKey() method for class " + entityName);
         //@formatter:off
-        String codeGetByKey =  "public static " + entityName + " getByKey(Long key)  throws play.modules.neo4j.exception.Neo4jException  {" +
-                                    "return (" + entityName + ")getByKey(key, \"" + entityName + "\");" +
+        String codeGetByKey =  "public static play.modules.neo4j.model.Neo4jModel getByKey(Long key)  throws play.modules.neo4j.exception.Neo4jException  {" +
+                                    "return (" + entityName + ")_getByKey(key, \"" + entityName + "\");" +
                                 "}";
         //@formatter:on
         Logger.debug(codeGetByKey);

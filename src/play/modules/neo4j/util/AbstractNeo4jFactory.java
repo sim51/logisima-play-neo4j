@@ -14,8 +14,8 @@ import org.neo4j.graphdb.index.Index;
 import play.Logger;
 import play.modules.neo4j.annotation.Neo4jFactory;
 import play.modules.neo4j.annotation.Neo4jIndex;
-import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.exception.Neo4jException;
+import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 
 public abstract class AbstractNeo4jFactory {
@@ -148,7 +148,7 @@ public abstract class AbstractNeo4jFactory {
             if (nodeWrapper.getNode() == null) {
                 nodeWrapper.setNode(Neo4j.db().createNode());
                 for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
-                    if (!field.getName().equals("underlyingNode") && !field.getName().equals("shouldBeSave")
+                    if (!field.getName().equals("node") && !field.getName().equals("shouldBeSave")
                             && field.get(nodeWrapper) != null) {
                         nodeWrapper.getNode().setProperty(field.getName(), field.get(nodeWrapper));
                     }

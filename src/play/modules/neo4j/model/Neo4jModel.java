@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
+import play.Play;
 import play.modules.neo4j.annotation.Neo4jEntity;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.exception.Neo4jException;
@@ -31,7 +32,7 @@ public abstract class Neo4jModel {
     /**
      * Underlying node of the model.
      */
-    public Node    underlyingNode;
+    public Node    node;
 
     /**
      * Boolean to know if the pojo as been changed, and so if the <code>save</code> method should be invoke.
@@ -42,23 +43,23 @@ public abstract class Neo4jModel {
      * Default constructor for creation.
      */
     public Neo4jModel() {
-        this.shouldBeSave = Boolean.TRUE;
+        this.shouldBeSave = Boolean.FALSE;
     }
 
     /**
      * Constructor for existing node.
      * 
-     * @param underlyingNode
+     * @param node
      */
-    public Neo4jModel(Node underlyingNode) {
-        this.underlyingNode = underlyingNode;
+    public Neo4jModel(Node node) {
+        this.node = node;
     }
 
     /**
      * Getter for id.
      */
     public Long getKey() {
-        return (Long) this.underlyingNode.getProperty("key", null);
+        return (Long) this.node.getProperty("key", null);
     }
 
     /**
@@ -76,16 +77,16 @@ public abstract class Neo4jModel {
      * @return
      */
     public Node getNode() {
-        return underlyingNode;
+        return node;
     }
 
     /**
-     * Setter for underlying node.
+     * Setter for node.
      * 
-     * @param underlyingNode
+     * @param node
      */
-    public void setNode(Node underlyingNode) {
-        this.underlyingNode = underlyingNode;
+    public void setNode(Node node) {
+        this.node = node;
     }
 
     /**
@@ -103,7 +104,9 @@ public abstract class Neo4jModel {
      */
     private void _save() throws Neo4jException {
         AbstractNeo4jFactory factory = getFactory(this.getClass());
-        factory.saveAndIndex(this);
+        Neo4jModel model = factory.saveAndIndex(this);
+        this.node = model.getNode();
+        this.key = model.key;
         this.shouldBeSave = Boolean.FALSE;
     }
 
@@ -124,23 +127,28 @@ public abstract class Neo4jModel {
      * @return
      * @throws Neo4jException
      */
-    protected static <T extends Neo4jModel> T getByKey(Long key, String className) throws Neo4jException {
+    protected static <T extends Neo4jModel> T _getByKey(Long key, String className) throws Neo4jException {
         Neo4jModel nodeWrapper = null;
         try {
-            Class clazz = Class.forName(className);
+            Class clazz = Play.classes.getApplicationClass(className).javaClass;
             AbstractNeo4jFactory factory = getFactory(clazz);
             String indexName = clazz.getSimpleName() + "_KEY";
-            Node node = factory.getByKey(key, indexName);
+            Node node = factory.getByKey(key, indexName.toUpperCase());
 
             Constructor c;
             c = clazz.getDeclaredConstructor();
             c.setAccessible(true);
             nodeWrapper = (Neo4jModel) c.newInstance();
             nodeWrapper.setNode(node);
+            nodeWrapper.setKey(key);
         } catch (Exception e) {
-            throw new Neo4jPlayException("Error when create a Neo4jModel by reflection :" + e.getCause());
+            throw new Neo4jPlayException("Error when create a Neo4jModel by reflection :" + e.getMessage());
         }
         return (T) nodeWrapper;
+    }
+
+    public static <T extends Neo4jModel> T getByKey(Long key) throws Neo4jException {
+        throw new UnsupportedOperationException("Please annotate correctly your neo4j model & factory.");
     }
 
     /**
@@ -169,10 +177,10 @@ public abstract class Neo4jModel {
      * Method to delete orphelan node ... when garbage collector is running.
      */
     protected void finalize() throws Throwable {
-        if (this.underlyingNode.hasRelationship() == false) {
+        if (this.node.hasRelationship() == false) {
             Transaction tx = Neo4j.db().beginTx();
             try {
-                this.underlyingNode.delete();
+                this.node.delete();
                 tx.success();
             } finally {
                 tx.finish();
