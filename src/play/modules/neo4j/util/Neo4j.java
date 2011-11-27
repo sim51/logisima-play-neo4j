@@ -89,10 +89,21 @@ public class Neo4j {
                     node.delete();
                 }
             }
+
+            // Deleting indexes
+            String[] nodeIndexNames = Neo4j.db().index().nodeIndexNames();
+            for (int i = 0; i < nodeIndexNames.length; i++) {
+                Neo4j.db().index().forNodes(nodeIndexNames[i]).delete();
+            }
+            String[] relationIdexNames = Neo4j.db().index().relationshipIndexNames();
+            for (int j = 0; j < relationIdexNames.length; j++) {
+                Neo4j.db().index().forNodes(relationIdexNames[j]).delete();
+            }
             tx.success();
         } finally {
             tx.finish();
         }
+
     }
 
 }
