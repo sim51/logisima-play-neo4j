@@ -1,31 +1,24 @@
 package play.modules.neo4j.util;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.RelationshipType;
-import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.index.Index;
-
 import play.Logger;
-import play.modules.neo4j.annotation.Neo4jFactory;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 
-public abstract class AbstractNeo4jFactory {
+import java.util.HashMap;
+import java.util.Map;
+
+public class Neo4jFactory {
+
+    private static String className;
 
     /**
      * Reference node for all object.
      */
-    private static Node             referenceNode;
+    private static Node referenceNode;
 
     /**
      * Define the relationshipType between the root node, and the model reference node.
@@ -40,32 +33,20 @@ public abstract class AbstractNeo4jFactory {
     /**
      * Name of the key property on each object.
      */
-    public final static String      NODE_KEY_COUNTER = "KEY_COUNTER";
+    public final static String NODE_KEY_COUNTER = "KEY_COUNTER";
+    private Class clazz;
+    private final static String REFERENCE_KEYWORD = "_REF";
 
-    /**
-     * Constructor of the Abstract Factory.
-     */
-    public AbstractNeo4jFactory() {
+
+    public Neo4jFactory(Class clazz) {
+        this.clazz = clazz;
         GraphDatabaseService graphDb = Neo4j.db();
 
-        Neo4jFactory annotation = this.getClass().getAnnotation(Neo4jFactory.class);
-        if (annotation != null && annotation.root2ref() != null && annotation.ref2node() != null
-                && annotation.clazz() != null) {
-
-            String root2refStr = annotation.root2ref();
-            String ref2nodeStr = annotation.ref2node();
-            Class entityRelationclazz = annotation.clazz();
-
-            for (Object obj : Arrays.asList(entityRelationclazz.getEnumConstants())) {
-                if (obj.toString().equals(root2refStr)) {
-                    this.root2ref = (RelationshipType) obj;
-                }
-                if (obj.toString().equals(ref2nodeStr)) {
-                    this.ref2node = (RelationshipType) obj;
-                }
-            }
-        }
-        else {
+        if (this.clazz != null && this.clazz.getSimpleName() != null ) {
+            String className = this.clazz.getSimpleName().toUpperCase();
+            this.root2ref = DynamicRelationshipType.withName(className+ REFERENCE_KEYWORD);
+            this.ref2node = DynamicRelationshipType.withName(className);
+        } else {
             throw new Neo4jPlayException(
                     "Factory class that extends AbstractNeo4jFactory must have the annotation @Neo4jFactory correctly configure !!!");
         }
@@ -93,8 +74,8 @@ public abstract class AbstractNeo4jFactory {
 
     /**
      * Method to retrieve a node by a key.
-     * 
-     * @param key the idenfifier of the node
+     *
+     * @param key       the idenfifier of the node
      * @param indexName Name of the index on wich to search
      * @return
      */
@@ -107,7 +88,7 @@ public abstract class AbstractNeo4jFactory {
 
     /**
      * Method to save/update and index a node.
-     * 
+     *
      * @param nodeWrapper to save
      * @return the save or update node
      * @throws Neo4jException
@@ -177,7 +158,7 @@ public abstract class AbstractNeo4jFactory {
     /**
      * Method to delete a node. If it still have a relationship (otherwise than ref2node one), this method throw a
      * runtime exception.
-     * 
+     *
      * @param nodeWrapper to delete
      * @return the deleted object
      * @throws Neo4jException
@@ -188,7 +169,7 @@ public abstract class AbstractNeo4jFactory {
 
     /**
      * Method to delete a node, also when it still have relationship. Use this method carefully !
-     * 
+     *
      * @param nodeWrapper to delete
      * @return the object deleted
      * @throws Neo4jException
@@ -199,7 +180,7 @@ public abstract class AbstractNeo4jFactory {
 
     /**
      * General(private) method to delete a node.
-     * 
+     *
      * @param nodeWrapper
      * @param forceDelete if this param is set to TRUE, then all relationship will be deleted before we delete the node.
      * @return The object that have been deleted.
@@ -215,8 +196,7 @@ public abstract class AbstractNeo4jFactory {
                 for (Relationship relation : node.getRelationships(ref2node, Direction.INCOMING)) {
                     relation.delete();
                 }
-            }
-            else {
+            } else {
                 // for all other relationship if foreceDelete is set to true
                 for (Relationship relation : node.getRelationships()) {
                     relation.delete();
@@ -243,7 +223,7 @@ public abstract class AbstractNeo4jFactory {
 
     /**
      * Method to get the next ID for an object.
-     * 
+     *
      * @return
      */
     private synchronized Long getNextId() {

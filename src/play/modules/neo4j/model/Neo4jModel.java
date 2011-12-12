@@ -1,17 +1,17 @@
 package play.modules.neo4j.model;
 
-import java.lang.reflect.Constructor;
-
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-
 import play.Play;
 import play.modules.neo4j.annotation.Neo4jEntity;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
-import play.modules.neo4j.util.AbstractNeo4jFactory;
+import play.modules.neo4j.util.Neo4jFactory;
 import play.modules.neo4j.util.Neo4j;
+import play.modules.neo4j.util.Neo4jFactory;
+
+import java.lang.reflect.Constructor;
 
 /**
  * Model class for all Neo4j node. Model are a wrapper of a node object, and all getter/setter operations are delegated
@@ -107,7 +107,7 @@ public abstract class Neo4jModel {
      * @throws Neo4jException
      */
     private void _save() throws Neo4jException {
-        AbstractNeo4jFactory factory = getFactory(this.getClass());
+        Neo4jFactory factory = getFactory(this.getClass());
         Neo4jModel model = factory.saveAndIndex(this);
         this.node = model.getNode();
         this.key = model.key;
@@ -143,7 +143,7 @@ public abstract class Neo4jModel {
      * @throws Neo4jException
      */
     private void _delete() throws Neo4jException {
-        AbstractNeo4jFactory factory = getFactory(this.getClass());
+        Neo4jFactory factory = getFactory(this.getClass());
         factory.delete(this);
         this.node = null;
     }
@@ -158,7 +158,7 @@ public abstract class Neo4jModel {
         Neo4jModel nodeWrapper = null;
         try {
             Class clazz = Play.classes.getApplicationClass(className).javaClass;
-            AbstractNeo4jFactory factory = getFactory(clazz);
+            Neo4jFactory factory = getFactory(clazz);
             String indexName = clazz.getSimpleName() + "_KEY";
             Node node = factory.getByKey(key, indexName.toUpperCase());
 
@@ -191,15 +191,12 @@ public abstract class Neo4jModel {
      * @return
      * @throws Neo4jException
      */
-    protected static AbstractNeo4jFactory getFactory(Class clazz) throws Neo4jException {
-        AbstractNeo4jFactory factory = null;
+    protected static Neo4jFactory getFactory(Class clazz) throws Neo4jException {
+        Neo4jFactory factory = null;
         Neo4jEntity entity = (Neo4jEntity) clazz.getAnnotation(Neo4jEntity.class);
         if (entity != null) {
             try {
-                Class<?> factoryClass = entity.value();
-                Constructor ct;
-                ct = factoryClass.getConstructor();
-                factory = (AbstractNeo4jFactory) ct.newInstance();
+                factory = new Neo4jFactory(clazz);
             } catch (Exception e) {
                 throw new Neo4jException(e);
             }
