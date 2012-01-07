@@ -8,7 +8,6 @@ Features :
 
 NB:
 Model class have to extend Neo4jModel class
-You must have a Factory class that extend AbstractFactory and specify relation between Model & Factory by annotation  
 
 TODO:
 * import / export from an YML format
