@@ -1,17 +1,16 @@
 package play.modules.neo4j.model;
 
+import java.lang.reflect.Constructor;
+
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+
 import play.Play;
-import play.modules.neo4j.annotation.Neo4jEntity;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
-import play.modules.neo4j.util.Neo4jFactory;
 import play.modules.neo4j.util.Neo4j;
 import play.modules.neo4j.util.Neo4jFactory;
-
-import java.lang.reflect.Constructor;
 
 /**
  * Model class for all Neo4j node. Model are a wrapper of a node object, and all getter/setter operations are delegated
@@ -35,7 +34,7 @@ public abstract class Neo4jModel {
     public Node    node;
 
     /**
-     * Boolean to know if the pojo as been changed, and so if the <code>save</code> method should be invoke.
+     * Boolean to know if the pojo as been changed, so if the <code>save</code> method should be invoke.
      */
     public Boolean shouldBeSave = Boolean.FALSE;
 
@@ -193,13 +192,10 @@ public abstract class Neo4jModel {
      */
     protected static Neo4jFactory getFactory(Class clazz) throws Neo4jException {
         Neo4jFactory factory = null;
-        Neo4jEntity entity = (Neo4jEntity) clazz.getAnnotation(Neo4jEntity.class);
-        if (entity != null) {
-            try {
-                factory = new Neo4jFactory(clazz);
-            } catch (Exception e) {
-                throw new Neo4jException(e);
-            }
+        try {
+            factory = new Neo4jFactory(clazz);
+        } catch (Exception e) {
+            throw new Neo4jException(e);
         }
         return factory;
     }
