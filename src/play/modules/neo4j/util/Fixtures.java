@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.neo4j.graphdb.DynamicRelationshipType;
+import org.neo4j.graphdb.Transaction;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
@@ -18,15 +20,36 @@ import play.Play;
 import play.data.binding.types.DateBinder;
 import play.exceptions.YAMLException;
 import play.modules.neo4j.exception.Neo4jException;
+import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 import play.templates.TemplateLoader;
 import play.vfs.VirtualFile;
 
+/**
+ * Util class to help unit test for loading data and exort it.
+ * 
+ * @author bsimard
+ * 
+ */
 public class Fixtures {
 
-    static Pattern             keyPattern = Pattern.compile("([^(]+)\\(([^)]+)\\)");
-    static Map<String, Object> idCache    = new HashMap<String, Object>();
+    private final static Pattern       keyPattern              = Pattern.compile("([^(]+)\\(([^)]+)\\)");
+    private static final String        RELATION_FROM_KEY       = "from";
+    private static final String        RELATION_TO_KEY         = "to";
+    private static final String        RELATION_TYPE_KEY       = "type";
+    private static final String        RELATION_TYPE_CLASS_KEY = "class";
+    private static final String        RELATION_TYPE_VALUE_KEY = "value";
+    private static Map<String, Object> idCache                 = new HashMap<String, Object>();
 
+    public static void deleteDatabase() {
+        Neo4j.clear();
+    }
+
+    /**
+     * Method to load an YML file into neo4j database.
+     * 
+     * @param name file name into play java path (like conf directory).
+     */
     public static void loadYml(String name) {
         VirtualFile yamlFile = null;
         try {
@@ -57,36 +80,64 @@ public class Fixtures {
                         String type = matcher.group(1);
                         String id = matcher.group(2);
 
-                        // All type that are not 'Relation' and don't start with 'models', are in fact 'Model', so we
-                        // adding the 'models' package
-                        if (!type.equals("Relation") && !type.startsWith("models.")) {
-                            type = "models." + type;
+                        if (type.equals("Relation")) {
+                            // Get params from YML object
+                            Map<String, String> params = serializeRelation(objects.get(key));
+                            if (idCache.containsKey(params.get(RELATION_FROM_KEY))
+                                    && idCache.containsKey(params.get(RELATION_TO_KEY))) {
+                                Neo4jModel modelFrom = (Neo4jModel) idCache.get(params.get(RELATION_FROM_KEY));
+                                Neo4jModel modelTo = (Neo4jModel) idCache.get(params.get(RELATION_TO_KEY));
+                                Transaction tx = Neo4j.db().beginTx();
+                                try {
+                                    modelFrom.getNode().createRelationshipTo(modelTo.getNode(),
+                                            DynamicRelationshipType.withName(params.get(RELATION_TYPE_VALUE_KEY)));
+                                    tx.success();
+                                } finally {
+                                    tx.finish();
+                                }
+
+                            }
+                            else {
+                                throw new Neo4jException("Relation dependency not valid : unabled to find "
+                                        + params.get(RELATION_FROM_KEY) + " and " + params.get(RELATION_TO_KEY)
+                                        + " from already processing object !");
+                            }
                         }
+                        else {
+                            // All type that are not 'Relation' and don't start with 'models', are in fact 'Model', so
+                            // we
+                            // adding the 'models' package
+                            if (!type.startsWith("models.")) {
+                                type = "models." + type;
+                            }
 
-                        // we look at "cache" if the object as already be processed, if so we throw an exception because
-                        // it can't have to object with the same id in yml file.
-                        if (idCache.containsKey(type + "-" + id)) {
-                            throw new RuntimeException("Cannot load fixture " + name + ", duplicate id '" + id
-                                    + "' for type " + type);
+                            // we look at "cache" if the object as already be processed, if so we throw an exception
+                            // because
+                            // it can't have to object with the same id in yml file.
+                            if (idCache.containsKey(id)) {
+                                throw new RuntimeException("Cannot load fixture " + name + ", duplicate id '" + id
+                                        + "' for type " + type);
+                            }
+
+                            // Serialize YML attribute into an Hasmap that correspond to http params to use the same
+                            // bind
+                            // function
+                            Map<String, String[]> params = new HashMap<String, String[]>();
+                            if (objects.get(key) == null) {
+                                objects.put(key, new HashMap<Object, Object>());
+                            }
+                            serialize(objects.get(key), "object", params);
+
+                            // Bind & save he model
+                            @SuppressWarnings("unchecked")
+                            Class<Neo4jModel> cType = (Class<Neo4jModel>) Play.classloader.loadClass(type);
+                            Neo4jModel model = (Neo4jModel) bind("object", cType, params);
+                            model.save();
+
+                            // we put in cache the object by its id because it is processed and we could need it for
+                            // relation !
+                            idCache.put(id, model);
                         }
-
-                        // Serialize YML attribute into an Hasmap that correspond to http params to use the same bind
-                        // function
-                        Map<String, String[]> params = new HashMap<String, String[]>();
-                        if (objects.get(key) == null) {
-                            objects.put(key, new HashMap<Object, Object>());
-                        }
-                        serialize(objects.get(key), "object", params);
-
-                        // Bind & save he model
-                        @SuppressWarnings("unchecked")
-                        Class<Neo4jModel> cType = (Class<Neo4jModel>) Play.classloader.loadClass(type);
-                        Neo4jModel model = (Neo4jModel) bind("object", cType, params);
-                        model.save();
-
-                        // we put in cache the object by its id because it is processed and we could need it for
-                        // relation !
-                        idCache.put(type + "-" + id, model);
                     }
                 }
             }
@@ -99,14 +150,14 @@ public class Fixtures {
     }
 
     /**
-     * Copy of playframework metho, @see <code>Fixtures.serialized</code>. It serialized into the
-     * <code>serialized</code> params all Yml attribute.
+     * Copy of playframework method, @see <code>Fixtures.serialized</code>. It serialized into the
+     * <code>serialized</code> params all Yml attributes.
      * 
      * @param values
      * @param prefix
      * @param serialized
      */
-    static void serialize(Map<?, ?> values, String prefix, Map<String, String[]> serialized) {
+    private static void serialize(Map<?, ?> values, String prefix, Map<String, String[]> serialized) {
         for (Object key : values.keySet()) {
             Object value = values.get(key);
             if (value == null) {
@@ -144,39 +195,82 @@ public class Fixtures {
     }
 
     /**
-     * Method to bind a Neo4jModel from the params attributes.
+     * Method to parse Map object that represent an YML Relation object. We return a well formed Map with goods keys.
+     * 
+     * @param values
+     * @return
+     */
+    private static Map<String, String> serializeRelation(Map<?, ?> values) {
+        Map<String, String> params = new HashMap<String, String>();
+        for (Object key : values.keySet()) {
+            String value = (String) values.get(key);
+            if (key.equals(RELATION_FROM_KEY)) {
+                params.put(RELATION_FROM_KEY, value);
+            }
+            else if (key.equals(RELATION_TO_KEY)) {
+                params.put(RELATION_TO_KEY, value);
+            }
+            else if (key.equals(RELATION_TYPE_KEY)) {
+                String[] tab = value.split("\\.");
+                String enumValue = tab[tab.length - 1];
+                String clazz = value.replace("." + enumValue, "");
+                // default package for relatonship enumeration is model.reltionship, so if package is not present, we
+                // add the package
+                if (tab.length == 2 && Character.isUpperCase(value.subSequence(0, 1).charAt(0))) {
+                    clazz = "models.relationship." + clazz;
+                }
+                params.put(RELATION_TYPE_CLASS_KEY, clazz);
+                params.put(RELATION_TYPE_VALUE_KEY, enumValue);
+            }
+            else {
+                throw new Neo4jPlayException("Unkhnow attribute " + key + " [" + value + "] for Relation");
+            }
+        }
+        if (params.size() != 4) {
+            throw new Neo4jPlayException(
+                    "Number of attributed for relation is not good ! Relation has to get to,from and type atributes, and only those");
+        }
+        return params;
+    }
+
+    /**
+     * Method to bind a Neo4jModel from params attributes.
      * 
      * @param clazz
      * @param params
      * @return
-     * @throws Exception
      */
-    private static Object bind(String name, Class clazz, Map<String, String[]> params) throws Exception {
+    private static Object bind(String name, Class clazz, Map<String, String[]> params) {
         Binder binder = new Binder(clazz);
 
-        // we search the object default constructor, and we simply call it
-        Constructor constructor = clazz.getDeclaredConstructor();
-        constructor.setAccessible(true);
-        Neo4jModel model = (Neo4jModel) constructor.newInstance();
+        try {
+            // we search the object default constructor, and we simply call it
+            Constructor constructor = clazz.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            Neo4jModel model = (Neo4jModel) constructor.newInstance();
 
-        // We iterate on all params and search the setter into the class
-        for (String param : params.keySet()) {
-            String paramName = param.replace(name + ".", "");
-            if (binder.properties.containsKey(paramName)) {
-                Method setter = binder.properties.get(paramName);
-                if (setter != null) {
-                    setter.invoke(model, params.get(param));
+            // We iterate on all params and search the setter into the class
+            for (String param : params.keySet()) {
+                String paramName = param.replace(name + ".", "");
+                if (binder.properties.containsKey(paramName)) {
+                    Method setter = binder.properties.get(paramName);
+                    if (setter != null) {
+                        setter.invoke(model, params.get(param));
+                    }
+                    else {
+                        throw new Neo4jPlayException("Setter for " + paramName + " can't be found into Neo4jModel "
+                                + clazz.getSimpleName());
+                    }
                 }
                 else {
-                    throw new Neo4jException("Setter for " + paramName + " can't be found into Neo4jModel "
+                    throw new Neo4jPlayException("Property " + paramName + " can't be found into Neo4jModel "
                             + clazz.getSimpleName());
                 }
             }
-            else {
-                throw new Neo4jException("Property " + paramName + " can't be found into Neo4jModel "
-                        + clazz.getSimpleName());
-            }
+            return model;
+        } catch (Exception e) {
+            throw new Neo4jPlayException(e.getMessage());
         }
-        return model;
+
     }
 }
