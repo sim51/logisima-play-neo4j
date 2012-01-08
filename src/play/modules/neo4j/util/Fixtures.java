@@ -1,7 +1,5 @@
 package play.modules.neo4j.util;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -242,35 +240,6 @@ public class Fixtures {
      */
     private static Object bind(String name, Class clazz, Map<String, String[]> params) {
         Binder binder = new Binder(clazz);
-
-        try {
-            // we search the object default constructor, and we simply call it
-            Constructor constructor = clazz.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            Neo4jModel model = (Neo4jModel) constructor.newInstance();
-
-            // We iterate on all params and search the setter into the class
-            for (String param : params.keySet()) {
-                String paramName = param.replace(name + ".", "");
-                if (binder.properties.containsKey(paramName)) {
-                    Method setter = binder.properties.get(paramName);
-                    if (setter != null) {
-                        setter.invoke(model, params.get(param));
-                    }
-                    else {
-                        throw new Neo4jPlayException("Setter for " + paramName + " can't be found into Neo4jModel "
-                                + clazz.getSimpleName());
-                    }
-                }
-                else {
-                    throw new Neo4jPlayException("Property " + paramName + " can't be found into Neo4jModel "
-                            + clazz.getSimpleName());
-                }
-            }
-            return model;
-        } catch (Exception e) {
-            throw new Neo4jPlayException(e.getMessage());
-        }
-
+        return binder.bind(name, params);
     }
 }

@@ -1,5 +1,9 @@
 package play.modules.neo4j;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Map;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 
 import play.Logger;
@@ -7,7 +11,9 @@ import play.Play;
 import play.Play.Mode;
 import play.PlayPlugin;
 import play.classloading.ApplicationClasses.ApplicationClass;
+import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.model.Neo4jModelEnhancer;
+import play.modules.neo4j.util.Binder;
 import play.modules.neo4j.util.Neo4j;
 import play.mvc.Router;
 
@@ -49,6 +55,28 @@ public class Neo4jPlugin extends PlayPlugin {
             // adding some route for
             Logger.debug("adding routes for Neo4j plugin");
             Router.addRoute("GET", "/@neo4j/console", "controllers.module.neo4j.Neo4jController.console");
+        }
+    }
+
+    @Override
+    public Object bind(String name, Class clazz, Type type, Annotation[] annotations, Map<String, String[]> params) {
+        if (Neo4jModel.class.isAssignableFrom(clazz)) {
+            Binder binder = new Binder(clazz);
+            return binder.bind(name, params);
+        }
+        else {
+            return null;
+        }
+    }
+
+    @Override
+    public Object bind(String name, Object o, Map<String, String[]> params) {
+        if (Neo4jModel.class.isAssignableFrom(o.getClass())) {
+            Binder binder = new Binder(o.getClass());
+            return binder.bind(name, params);
+        }
+        else {
+            return null;
         }
     }
 

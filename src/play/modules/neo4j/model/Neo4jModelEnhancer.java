@@ -73,7 +73,7 @@ public class Neo4jModelEnhancer extends Enhancer {
                         }
                     } catch (NotFoundException noGetter) {
 
-                        // Créé le getter
+                        // create getter
                         Logger.debug("Adding getter  " + getter + " for class " + entityName);
                         //@formatter:off
                         String code = "public " + ctField.getType().getName() + " " + getter + "() {" +
@@ -101,7 +101,7 @@ public class Neo4jModelEnhancer extends Enhancer {
                             throw new NotFoundException("it's not a true setter !");
                         }
                     } catch (NotFoundException noSetter) {
-                        // Créé le setter
+                        // create setter
                         Logger.debug("Adding setter  " + getter + " for class " + entityName);
                         //@formatter:off
                         CtMethod setMethod = CtMethod
