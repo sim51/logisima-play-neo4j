@@ -40,7 +40,6 @@ public class Neo4jPlugin extends PlayPlugin {
         // we stop the database
         Logger.info("Shutdown neo4j database");
         Neo4j.destroy();
-
     }
 
     @Override
