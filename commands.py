@@ -1,5 +1,11 @@
 # Here you can create play commands that are specific to the module, and extend existing commands
 
+# Here you can create play commands that are specific to the module, and extend existing commands
+import os, os.path
+import getopt
+import sys
+import subprocess
+
 MODULE = 'neo4j'
 
 # Commands that are specific to your module
@@ -19,6 +25,7 @@ def execute(**kargs):
         print "~ import       Import an yaml file (conf/data.yml by default) to database"
         print "~     with --filename you can specify the yaml filename file (without the yml extension !)"
         print "~     with --folder you can specify the folder where yaml file will be written (conf by default)"
+        print "~     with --reset option, we delete all database entries before the import"
         print "~ export       Export your database into yaml format (to file conf/data.yml)"
         print "~     with --filename you can specify the yaml filename file (without the yml extension !)"
         print "~     with --folder you can specify the folder where yaml file will be read (conf by default)"
