@@ -20,3 +20,11 @@
 /samples-and-tests/logisima-play-neo4j-test/dbTest/
 
 
+
+.DS_Store
+.iml
+samples-and-tests/test/.classpath
+logisima-play-neo4j-fork.iml
+samples-and-tests/test/.project
+samples-and-tests/test/.settings/org.eclipse.core.resources.prefs
+samples-and-tests/test/.settings/org.eclipse.jdt.core.prefs
