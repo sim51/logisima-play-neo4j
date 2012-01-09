@@ -1,7 +1,6 @@
 package play.modules.neo4j;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-
 import play.Logger;
 import play.Play;
 import play.Play.Mode;
@@ -13,9 +12,8 @@ import play.mvc.Router;
 
 /**
  * Neo4j Play! plugin class.
- * 
+ *
  * @author bsimard
- * 
  */
 public class Neo4jPlugin extends PlayPlugin {
 
@@ -41,6 +39,7 @@ public class Neo4jPlugin extends PlayPlugin {
     public void enhance(ApplicationClass appClass) throws Exception {
         // for enhance Neo4jModel class, to add getter/setter on the wrapped node
         new Neo4jModelEnhancer().enhanceThisClass(appClass);
+        new play.modules.neo4j.model.Neo4jRelationshipEnhancer().enhanceThisClass(appClass);
     }
 
     @Override
@@ -55,7 +54,7 @@ public class Neo4jPlugin extends PlayPlugin {
     /**
      * Registers a shutdown hook for the Neo4j instance so that it shuts down nicely when the VM exits (even if you
      * "Ctrl-C" the running example before it's completed)
-     * 
+     *
      * @param graphDb
      */
     private static void registerShutdownHook(final GraphDatabaseService graphDb) {
