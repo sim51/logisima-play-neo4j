@@ -1,6 +1,8 @@
 Play! framework for neo4j database
 
-# Features :
+Features
+=================
+
 * embedded database (Only, no REST API for now)
 * create your graph by annotation, module do mapping for you
 * for each of your model, plugin generate an unique id (key)
@@ -8,20 +10,34 @@ Play! framework for neo4j database
 * define relationships with annotation @RelatedTo
 * define relationships class with properties with annotation @RelatedToVia
 
+Installation
+=================
 
-# Usage
+add this to your application.conf
 
-## Simple model
+    ## NEO4J ----
+    module.neo4j=lib/
+    neo4j.path=db
+    %test.neo4j.path=dbTest
 
-### app/models/User.java
+Place *play-neo4j.jar* in your "lib" directory
+look in sample app to know wich libs you must import
 
+Usage
+=================
+
+Simple model
+------------
+
+**app/models/User.java**
+``` java
     @Neo4jEntity
     public class User extends Neo4jModel {
         public String login;
     }
-
-### app/controllers/Application.java
-
+```
+**app/controllers/Application.java**
+``` java
     User johndoe = new User();
     johndoe.login = "johndoe";
     try {
@@ -29,19 +45,21 @@ Play! framework for neo4j database
     } catch (Neo4jException e) {
         e.printStackTrace();
     }
-
-### Graph
+```
+**Graph**
 
 Will create this graph
-{{image::1.png}}
+![graph 1](https://github.com/ZoRdAK/logisima-play-neo4j-fork/blob/master/docs/images/1.png?raw=true "graph1")
+
 then when adding a second user
-{{image::2.png}}
+![graph 2](https://github.com/ZoRdAK/logisima-play-neo4j-fork/blob/master/docs/images/2.png?raw=true "graph2")
 
 
-## Simple relationship (working but in progress)
+Simple relationship (working but in progress)
+---------------------------------------------
 
-### app/models/User.java
-
+**app/models/User.java**
+``` java
     @Neo4jEntity
     public class User extends Neo4jModel {
         public String login;
@@ -49,9 +67,9 @@ then when adding a second user
         @RelatedTo(type = "KNOWS")
         public Set<User> friends;
     }
-
-### app/controllers/Application.java
-
+```
+**app/controllers/Application.java**
+``` java
     User johndoe = new User();
     johndoe.login = "johndoe";
     try {
@@ -68,16 +86,17 @@ then when adding a second user
         e.printStackTrace();
     }
     foobar.friends.add(johndoe);
-
-### Graph
+```
+**Graph**
 
 Will create this graph
-{{image::3.png}}
+![graph 3](https://github.com/ZoRdAK/logisima-play-neo4j-fork/blob/master/docs/images/3.png?raw=true "graph3")
 
-## Relationship with attributes
+Relationship with attributes
+----------------------------
 
-### app/models/User.java
-
+**app/models/User.java**
+``` java
     @Neo4jEntity
     public class User extends Neo4jModel {
         public String login;
@@ -88,9 +107,9 @@ Will create this graph
         @RelatedToVia
         public Iterator<Bookmark> bookmarks;
     }
-
-### app/models/Bookmark.java
-
+```
+**app/models/Bookmark.java**
+``` java
      @Neo4jEdge(type = "BOOKMARKED")
      public class Bookmark extends Neo4jRelationship {
          @StartNode
@@ -101,18 +120,18 @@ Will create this graph
 
          public int stars;
      }
-
-### app/models/Post.java
-
+```
+**app/models/Post.java**
+``` java
     @Neo4jEntity
     public class Post extends Neo4jModel {
         public String title;
         public String content;
     }
+```
 
-
-### app/controllers/Application.java
-
+**app/controllers/Application.java**
+``` java
     User johndoe = new User();
     johndoe.login = "johndoe";
     johndoe.save();
@@ -132,15 +151,16 @@ Will create this graph
     bookmark.user = foobar;
     bookmark.stars = 5;
     bookmark.save();
-
-### Graph
+```
+**Graph**
 
 Will create this graph
-{{image::4.png}}
+![graph 4](https://github.com/ZoRdAK/logisima-play-neo4j-fork/blob/master/docs/images/4.png?raw=true "graph4")
 
 
 See Junit Test in sample application for more !
 
-# TODO:
+TODO
+=================
 * import / export from an YML format
 * Adding more documentation
