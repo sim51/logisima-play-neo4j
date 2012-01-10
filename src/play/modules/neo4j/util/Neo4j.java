@@ -54,7 +54,8 @@ public class Neo4j {
                 bootstrapperDb.remove();
             }
         }
-        db().shutdown();
+        graphDb.get().shutdown();
+        graphDb.remove();
     }
 
     /**
