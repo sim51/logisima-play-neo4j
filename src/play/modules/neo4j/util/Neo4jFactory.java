@@ -42,6 +42,7 @@ public class Neo4jFactory {
      * Name of the key property on each object.
      */
     public final static String      NODE_KEY_COUNTER  = "KEY_COUNTER";
+    public final static String      NODE_CLASS_NAME   = "CLASSNAME";
     private Class                   clazz;
     private final static String     REFERENCE_KEYWORD = "_REF";
 
@@ -67,6 +68,7 @@ public class Neo4jFactory {
             try {
                 Node node = graphDb.createNode();
                 node.setProperty(NODE_KEY_COUNTER, new Long(1));
+                node.setProperty(NODE_CLASS_NAME, clazz.getSimpleName());
                 graphDb.getReferenceNode().createRelationshipTo(node, this.root2ref);
                 tx.success();
             } finally {
