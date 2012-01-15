@@ -4,14 +4,17 @@ import play.exceptions.PlayException;
 
 /**
  * Neo4j Play Exception class (it's a runtime exception by extending <code>PlayException</code>)
- * 
+ *
  * @author bsimard
- * 
  */
 public class Neo4jPlayException extends PlayException {
 
     public Neo4jPlayException(String message) {
         super(message);
+    }
+
+    public Neo4jPlayException(Exception e) {
+        super(e.getMessage(), e);
     }
 
     @Override
