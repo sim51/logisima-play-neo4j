@@ -1,4 +1,24 @@
+/**
+ * This file is part of logisima-play-neo4j.
+ *
+ * logisima-play-neo4j is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * logisima-play-neo4j is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with logisima-play-neo4j. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @See https://github.com/sim51/logisima-play-neo4j
+ */
 package play.modules.neo4j.relationship;
+
+import java.lang.reflect.Modifier;
 
 import javassist.CannotCompileException;
 import javassist.CtClass;
@@ -8,12 +28,10 @@ import play.classloading.ApplicationClasses.ApplicationClass;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jEnhancer;
 
-import java.lang.reflect.Modifier;
-
 /**
  * Enhance <code>Neo4jRelationship</code> to add setter wich are delegate operation to the underlying node (@see
  * Neo4jRelationship.class).
- *
+ * 
  * @author Karl COSSE
  */
 public class Neo4jRelationshipEnhancer extends Neo4jEnhancer {
@@ -36,24 +54,22 @@ public class Neo4jRelationshipEnhancer extends Neo4jEnhancer {
         for (CtField ctField : ctClass.getDeclaredFields()) {
             Object[] annotations = ctField.getAnnotations();
             for (Object info : annotations) {
-                String propertyName = ctField.getName().substring(0, 1).toUpperCase()
-                        + ctField.getName().substring(1);
+                String propertyName = ctField.getName().substring(0, 1).toUpperCase() + ctField.getName().substring(1);
                 String methodName = "set" + propertyName;
 
-                if (info.toString().contains("@play.modules.neo4j.annotation.StartNode") && Modifier.isPublic(ctField.getModifiers())) {
+                if (info.toString().contains("@play.modules.neo4j.annotation.StartNode")
+                        && Modifier.isPublic(ctField.getModifiers())) {
                     Logger.debug("##### Field " + ctField.getName() + " > StartNode");
-                    String code = "public void " + methodName + "(" + ctField.getType().getName() + " value) { " +
-                            "this." + ctField.getName() + " = value;" +
-                            "this.setStartNode(value);" +
-                            "}";
+                    String code = "public void " + methodName + "(" + ctField.getType().getName() + " value) { "
+                            + "this." + ctField.getName() + " = value;" + "this.setStartNode(value);" + "}";
                     createMethod(ctClass, entityName, code, methodName);
                     isStartNodeDefined = true;
-                } else if (info.toString().contains("@play.modules.neo4j.annotation.EndNode") && Modifier.isPublic(ctField.getModifiers())) {
+                }
+                else if (info.toString().contains("@play.modules.neo4j.annotation.EndNode")
+                        && Modifier.isPublic(ctField.getModifiers())) {
                     Logger.debug("##### Field " + ctField.getName() + " > EndNode");
-                    String code = "public void " + methodName + "(" + ctField.getType().getName() + " value) { " +
-                            "this." + ctField.getName() + " = value;" +
-                            "this.setEndNode(value);" +
-                            "}";
+                    String code = "public void " + methodName + "(" + ctField.getType().getName() + " value) { "
+                            + "this." + ctField.getName() + " = value;" + "this.setEndNode(value);" + "}";
                     createMethod(ctClass, entityName, code, methodName);
                     isEndNodeDefined = true;
                 }
@@ -61,10 +77,12 @@ public class Neo4jRelationshipEnhancer extends Neo4jEnhancer {
         }
 
         if (!isStartNodeDefined) {
-            throw new Neo4jPlayException("Please annotate in your class " + ctClass.getName() + " a public field with @StartNode");
+            throw new Neo4jPlayException("Please annotate in your class " + ctClass.getName()
+                    + " a public field with @StartNode");
         }
         if (!isEndNodeDefined) {
-            throw new Neo4jPlayException("Please annotate in your class " + ctClass.getName() + " a public field with @EndNode");
+            throw new Neo4jPlayException("Please annotate in your class " + ctClass.getName()
+                    + " a public field with @EndNode");
         }
 
         getByKeyMethod(ctClass, entityName);
@@ -76,9 +94,8 @@ public class Neo4jRelationshipEnhancer extends Neo4jEnhancer {
     }
 
     private void getByKeyMethod(CtClass ctClass, String entityName) throws CannotCompileException {
-        String code = "public static play.modules.neo4j.model.Neo4jRelationship getByKey(Long key) {" +
-                "return (" + entityName + ") _getByKey(key, \"" + entityName + "\");" +
-                "}";
+        String code = "public static play.modules.neo4j.model.Neo4jRelationship getByKey(Long key) {" + "return ("
+                + entityName + ") _getByKey(key, \"" + entityName + "\");" + "}";
         createMethod(ctClass, entityName, code, "getByKey");
     }
 

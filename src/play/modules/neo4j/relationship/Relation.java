@@ -1,8 +1,38 @@
+/**
+ * This file is part of logisima-play-neo4j.
+ *
+ * logisima-play-neo4j is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * logisima-play-neo4j is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with logisima-play-neo4j. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @See https://github.com/sim51/logisima-play-neo4j
+ */
 package play.modules.neo4j.relationship;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
-import org.neo4j.graphdb.*;
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.DynamicRelationshipType;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.IteratorUtil;
+
 import play.Logger;
 import play.modules.neo4j.annotation.RelatedTo;
 import play.modules.neo4j.exception.Neo4jException;
@@ -10,11 +40,10 @@ import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.util.Neo4j;
 
-import java.util.*;
-
 public class Relation<T extends Neo4jModel> implements Set<T> {
+
     public Neo4jModel parent;
-    private List<T> elements;
+    private List<T>   elements;
     private RelatedTo relation;
 
     public Relation(Neo4jModel parent, RelatedTo relation) {
@@ -142,8 +171,7 @@ public class Relation<T extends Neo4jModel> implements Set<T> {
         }
     }
 
-    public List<T> asList
-            () throws Neo4jException {
+    public List<T> asList() throws Neo4jException {
         if (elements == null || elements.size() == 0) {
             elements = new ArrayList<T>();
             org.neo4j.graphdb.Traverser t = elementsAsNodes();
@@ -169,11 +197,8 @@ public class Relation<T extends Neo4jModel> implements Set<T> {
     }
 
     private org.neo4j.graphdb.Traverser elementsAsNodes() {
-        return parent.getNode().traverse(
-                org.neo4j.graphdb.Traverser.Order.BREADTH_FIRST,
-                StopEvaluator.END_OF_GRAPH,
-                ReturnableEvaluator.ALL_BUT_START_NODE,
-                getRelationshipType(), getRelationshipDirection());
+        return parent.getNode().traverse(org.neo4j.graphdb.Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                ReturnableEvaluator.ALL_BUT_START_NODE, getRelationshipType(), getRelationshipDirection());
     }
 
     private Direction getRelationshipDirection() {
@@ -186,8 +211,10 @@ public class Relation<T extends Neo4jModel> implements Set<T> {
 
     private String getRelationshipName() {
         if (relation == null) {
-            return this.parent.getClass().getSimpleName().toUpperCase() + "_" + this.getClass().getSimpleName().toUpperCase();
-        } else {
+            return this.parent.getClass().getSimpleName().toUpperCase() + "_"
+                    + this.getClass().getSimpleName().toUpperCase();
+        }
+        else {
             return relation.type();
         }
     }

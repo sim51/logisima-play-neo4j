@@ -1,7 +1,39 @@
+/**
+ * This file is part of logisima-play-neo4j.
+ *
+ * logisima-play-neo4j is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * logisima-play-neo4j is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with logisima-play-neo4j. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @See https://github.com/sim51/logisima-play-neo4j
+ */
 package play.modules.neo4j.relationship;
 
-import org.neo4j.graphdb.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.DynamicRelationshipType;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.graphdb.ReturnableEvaluator;
+import org.neo4j.graphdb.StopEvaluator;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.IteratorUtil;
+
 import play.modules.neo4j.annotation.EndNode;
 import play.modules.neo4j.annotation.RelatedToVia;
 import play.modules.neo4j.exception.Neo4jException;
@@ -9,11 +41,10 @@ import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.util.Neo4j;
 
-import java.util.*;
-
 public class RelationVia<T extends Neo4jModel> implements Set<T> {
-    private Neo4jModel parent;
-    private List<T> elements;
+
+    private Neo4jModel   parent;
+    private List<T>      elements;
     private RelatedToVia relation;
 
     public RelationVia(Neo4jModel parent, RelatedToVia relation) {
@@ -58,7 +89,7 @@ public class RelationVia<T extends Neo4jModel> implements Set<T> {
         Transaction tx = Neo4j.db().beginTx();
         try {
             Relationship relationship = getEndNode(element).createRelationshipTo(getStartNode(), getRelationshipType());
-            //Add attributes
+            // Add attributes
             for (java.lang.reflect.Field field : element.getClass().getFields()) {
                 if (field.getAnnotation(EndNode.class) == null) {
                     relationship.setProperty(field.getName(), field.get(element));
@@ -84,7 +115,7 @@ public class RelationVia<T extends Neo4jModel> implements Set<T> {
     }
 
     private Node getEndNode(T element) {
-        //Find end Node in class
+        // Find end Node in class
         EndNode endNode = null;
         for (java.lang.reflect.Field field : element.getClass().getFields()) {
             endNode = field.getAnnotation(EndNode.class);
@@ -142,7 +173,7 @@ public class RelationVia<T extends Neo4jModel> implements Set<T> {
             Iterator<Node> iterator = t.iterator();
             while (iterator.hasNext()) {
                 Node noeud = iterator.next();
-                elements.add(T.<T>getByKey((Long) noeud.getProperty("key")));
+                elements.add(T.<T> getByKey((Long) noeud.getProperty("key")));
             }
         }
         return elements;
@@ -161,11 +192,8 @@ public class RelationVia<T extends Neo4jModel> implements Set<T> {
     }
 
     private org.neo4j.graphdb.Traverser elementsAsNodes() {
-        return getStartNode().traverse(
-                org.neo4j.graphdb.Traverser.Order.BREADTH_FIRST,
-                StopEvaluator.END_OF_GRAPH,
-                ReturnableEvaluator.ALL_BUT_START_NODE,
-                getRelationshipType(), getRelationshipDirection());
+        return getStartNode().traverse(org.neo4j.graphdb.Traverser.Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
+                ReturnableEvaluator.ALL_BUT_START_NODE, getRelationshipType(), getRelationshipDirection());
     }
 
     private Direction getRelationshipDirection() {
@@ -178,11 +206,13 @@ public class RelationVia<T extends Neo4jModel> implements Set<T> {
 
     private String getRelationshipName() {
         if (relation == null) {
-            return this.parent.getClass().getSimpleName().toUpperCase() + "_" + this.getClass().getSimpleName().toUpperCase();
-        } else {
-            return "coucou";//relation.type();
+            return this.parent.getClass().getSimpleName().toUpperCase() + "_"
+                    + this.getClass().getSimpleName().toUpperCase();
         }
-        //Récupérer la valeur de l'annotation et si vide => PARENT_ENFANT
+        else {
+            return "coucou";// relation.type();
+        }
+        // Récupérer la valeur de l'annotation et si vide => PARENT_ENFANT
     }
 
     private enum Relations implements RelationshipType {
