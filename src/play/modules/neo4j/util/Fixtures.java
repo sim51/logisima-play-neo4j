@@ -24,7 +24,7 @@ import play.templates.TemplateLoader;
 import play.vfs.VirtualFile;
 
 /**
- * Util class to help unit test for loading data and exort it.
+ * Util class to help unit test for loading data and export it.
  * 
  * @author bsimard
  * 

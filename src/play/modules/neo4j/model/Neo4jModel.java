@@ -21,6 +21,7 @@ import play.modules.neo4j.relationship.Neo4jRelationship;
 import play.modules.neo4j.relationship.Relation;
 import play.modules.neo4j.util.Neo4j;
 import play.modules.neo4j.util.Neo4jFactory;
+import play.modules.neo4j.util.Neo4jUtils;
 
 /**
  * Model class for all Neo4j node. Model are a wrapper of a node object, and all getter/setter operations are delegated
@@ -151,12 +152,7 @@ public abstract class Neo4jModel {
         this.node = null;
     }
 
-    protected static void _cleanUp(String className) {
-        Neo4jFactory factory = getFactory(className);
-        factory.cleanUp();
-    }
-
-    protected static <T extends Neo4jModel> List<T> _findAll(String className) {
+    protected static <T extends Neo4jModel> List<T> _findAll(String className) throws Neo4jException {
         List<T> elements = new ArrayList<T>();
         Neo4jFactory factory = getFactory(className);
         elements = (List<T>) factory.findAll();
@@ -172,7 +168,7 @@ public abstract class Neo4jModel {
     protected static <T extends Neo4jModel> T _getByKey(Long key, String className) throws Neo4jException {
         Class clazz = Play.classes.getApplicationClass(className).javaClass;
         Neo4jFactory factory = getFactory(clazz);
-        return (T) factory.getByKey(key, Neo4j.getIndexName(clazz.getSimpleName(), "key"));
+        return (T) factory.getByKey(key, Neo4jUtils.getIndexName(clazz.getSimpleName(), "key"));
     }
 
     /**
@@ -182,11 +178,13 @@ public abstract class Neo4jModel {
      * @return
      */
     public static Neo4jModel getByNode(Node node) {
-        String className = Neo4j.getClassNameFromNode(node);
+        String className = Neo4jUtils.getClassNameFromNode(node);
         if (className == null) {
             return null;
         }
-        return getFactory(className).getByNode(node);
+        // TODO : delete this method cause it's do nothing. If we want a Neo4jModel, we just have to create one and set
+        // the node property.
+        return null;
     }
 
     /**
@@ -202,6 +200,17 @@ public abstract class Neo4jModel {
             throw new Neo4jException(e);
         }
         return factory;
+    }
+
+    /**
+     * Private method to retrieve the factory of this model class.
+     * 
+     * @return
+     * @throws Neo4jException
+     */
+    private static Neo4jFactory getFactory(String className) throws Neo4jException {
+        Class clazz = Play.classes.getApplicationClass(className).javaClass;
+        return getFactory(clazz);
     }
 
     /**

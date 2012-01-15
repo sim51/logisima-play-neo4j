@@ -171,6 +171,9 @@ public class Neo4jFactory {
                     nodeWrapper.getNode().setProperty(field.getName(), field.get(nodeWrapper));
                 }
             }
+
+            // TODO : delete thiss line !!! There is nothing to do here. Database contains only data not dev helper or
+            // in proper manner to not duplicate it
             nodeWrapper.getNode().setProperty("clazz", nodeWrapper.getClass().getName());
 
             if (isNewNode) {
@@ -181,7 +184,7 @@ public class Neo4jFactory {
             // create indexes ...
             for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
                 // create an index on the field if there is the annotaton and field value is not null
-                if (Neo4j.isIndexedField(field)) {
+                if (Neo4jUtils.isIndexedField(field)) {
                     indexNodeField(nodeWrapper, field, oldValues.get(field.getName()));
                 }
             }
@@ -218,7 +221,7 @@ public class Neo4jFactory {
      * @throws IllegalAccessException
      */
     private void indexNodeField(Neo4jModel nodeWrapper, Field field, Object oldValue) throws IllegalAccessException {
-        String indexName = Neo4j.getIndexName(nodeWrapper.getClass().getSimpleName(), field);
+        String indexName = Neo4jUtils.getIndexName(nodeWrapper.getClass().getSimpleName(), field);
         if (indexName != null && field.get(nodeWrapper) != null) {
             // create the index
             Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
@@ -288,8 +291,8 @@ public class Neo4jFactory {
             // delete indexes
             for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
                 // is there an index on the field ?
-                if (Neo4j.isIndexedField(field)) {
-                    String indexName = Neo4j.getIndexName(nodeWrapper.getClass().getSimpleName(), field);
+                if (Neo4jUtils.isIndexedField(field)) {
+                    String indexName = Neo4jUtils.getIndexName(nodeWrapper.getClass().getSimpleName(), field);
                     if (indexName != null) {
                         Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
                         indexNode.remove(nodeWrapper.getNode());

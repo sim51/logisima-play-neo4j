@@ -1,11 +1,16 @@
 package play.modules.neo4j.relationship;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
+
 import play.Play;
 import play.modules.neo4j.annotation.EndNode;
 import play.modules.neo4j.annotation.Neo4jEdge;
@@ -15,18 +20,16 @@ import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.util.Neo4j;
-
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import play.modules.neo4j.util.Neo4jUtils;
 
 public abstract class Neo4jRelationship {
-    private Neo4jModel start;
-    private Neo4jModel end;
+
+    private Neo4jModel   start;
+    private Neo4jModel   end;
     private Relationship relationship;
-    private String relationshipName;
+    private String       relationshipName;
     @Neo4jIndex
-    public Long key;
+    public Long          key;
 
     public void delete() {
         Transaction tx = Neo4j.db().beginTx();
@@ -42,7 +45,6 @@ public abstract class Neo4jRelationship {
     public void save() throws Neo4jException {
         Transaction tx = Neo4j.db().beginTx();
 
-
         try {
             // if is a new objetc (doesn't have a node value), we create the node & generate an auto key
             boolean isNewRelationship = true;
@@ -50,30 +52,26 @@ public abstract class Neo4jRelationship {
                 Long nextId = getNextId();
                 this.setKey(nextId);
 
-                Relationship relationshipTo = start.getNode().createRelationshipTo(end.getNode(), DynamicRelationshipType.withName(getRelationshipName(this.getClass())));
+                Relationship relationshipTo = start.getNode().createRelationshipTo(end.getNode(),
+                        DynamicRelationshipType.withName(getRelationshipName(this.getClass())));
                 this.setRelationship(relationshipTo);
             }
 
-
-            //Add attributes
+            // Add attributes
             for (java.lang.reflect.Field field : this.getClass().getFields()) {
-                if (Modifier.isPublic(field.getModifiers()) &&
-                        !field.getName().equals("$toString0") &&
-                        !field.isAnnotationPresent(StartNode.class) &&
-                        !field.isAnnotationPresent(EndNode.class)) {
+                if (Modifier.isPublic(field.getModifiers()) && !field.getName().equals("$toString0")
+                        && !field.isAnnotationPresent(StartNode.class) && !field.isAnnotationPresent(EndNode.class)) {
                     this.getRelationship().setProperty(field.getName(), field.get(this));
                 }
             }
 
-
             // create an index on the field if there is the annotaton and field value is not null
             Field field = this.getClass().getField("key");
-            String indexName = Neo4j.getIndexName(this.getClass().getSimpleName(), field);
+            String indexName = Neo4jUtils.getIndexName(this.getClass().getSimpleName(), field);
             if (indexName != null && field.get(this) != null) {
                 Index<Relationship> indexNode = Neo4j.db().index().forRelationships(indexName);
                 indexNode.add(this.getRelationship(), field.getName(), field.get(this).toString());
             }
-
 
             tx.success();
         } catch (Exception e) {
@@ -98,7 +96,8 @@ public abstract class Neo4jRelationship {
                 relationshipName = annotation.type();
             }
             return relationshipName;
-        } else {
+        }
+        else {
             throw new Neo4jPlayException("Please annotate your Class (" + clazz.getSimpleName() + ") with @Neo4jEdge");
         }
     }
@@ -125,16 +124,17 @@ public abstract class Neo4jRelationship {
                 instance.setStartNode(Neo4jModel.getByNode(relationship.getStartNode()));
                 instance.setEndNode(Neo4jModel.getByNode(relationship.getEndNode()));
 
-                //Add attributes
+                // Add attributes
                 for (Field instanceField : clazz.getFields()) {
-                    if (Modifier.isPublic(instanceField.getModifiers()) &&
-                            !instanceField.getName().equals("node") &&
-                            !instanceField.getName().equals("$toString0")) {
+                    if (Modifier.isPublic(instanceField.getModifiers()) && !instanceField.getName().equals("node")
+                            && !instanceField.getName().equals("$toString0")) {
                         if (instanceField.isAnnotationPresent(StartNode.class)) {
                             instanceField.set(instance, instance.start);
-                        } else if (instanceField.isAnnotationPresent(EndNode.class)) {
+                        }
+                        else if (instanceField.isAnnotationPresent(EndNode.class)) {
                             instanceField.set(instance, instance.end);
-                        } else {
+                        }
+                        else {
                             instanceField.set(instance, relationship.getProperty(instanceField.getName()));
                         }
                     }
@@ -154,12 +154,12 @@ public abstract class Neo4jRelationship {
         } catch (NoSuchFieldException e) {
             throw new Neo4jPlayException(e);
         }
-        return Neo4j.getIndexName(clazz.getSimpleName(), field);
+        return Neo4jUtils.getIndexName(clazz.getSimpleName(), field);
     }
 
     /**
      * Method to get the next ID for an object.
-     *
+     * 
      * @return
      */
     private synchronized Long getNextId() {

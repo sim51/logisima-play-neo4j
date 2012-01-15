@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * The ESearchFieldIgnore annotation.
+ * The Neo4j Index annotation. Will create a neo4j index if a field is annotated this annotation.
  * 
  * @author bsimard
  * 
