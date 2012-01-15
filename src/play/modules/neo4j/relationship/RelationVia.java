@@ -1,4 +1,4 @@
-package play.modules.neo4j.model;
+package play.modules.neo4j.relationship;
 
 import org.neo4j.graphdb.*;
 import org.neo4j.helpers.collection.IteratorUtil;
@@ -6,6 +6,7 @@ import play.modules.neo4j.annotation.EndNode;
 import play.modules.neo4j.annotation.RelatedToVia;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
+import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.util.Neo4j;
 
 import java.util.*;

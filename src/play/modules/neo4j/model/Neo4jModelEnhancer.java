@@ -156,17 +156,6 @@ public class Neo4jModelEnhancer extends Enhancer {
         ctClass.addMethod(getByKeyMethod);
 
         // ~~~~~~~~~~~~~~~
-        // Adding cleanUp() method
-        //@formatter:off
-        String codeCleanUp = "public static void cleanUp() {" + 
-                                "return " + entityName + "._cleanUp(\"" + entityName + "\");" + 
-                             "}";
-        //@formatter:on
-        Logger.debug(codeCleanUp);
-        CtMethod cleanUpMethod = CtMethod.make(codeCleanUp, ctClass);
-        ctClass.addMethod(cleanUpMethod);
-
-        // ~~~~~~~~~~~~~~~
         // Adding findAll() method
         //@formatter:off
         String codeFindAll = "public static java.util.List findAll() {" +

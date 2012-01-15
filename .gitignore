@@ -18,6 +18,8 @@
 /samples-and-tests/logisima-play-neo4j-test/.classpath
 /samples-and-tests/logisima-play-neo4j-test/bin/
 /samples-and-tests/logisima-play-neo4j-test/dbTest/
+/samples-and-tests/logisima-play-neo4j-test/.project
+.externalToolBuilders/
 
 
 

@@ -1,4 +1,4 @@
-package play.modules.neo4j.model;
+package play.modules.neo4j.relationship;
 
 
 import org.neo4j.graphdb.*;
@@ -7,6 +7,7 @@ import play.Logger;
 import play.modules.neo4j.annotation.RelatedTo;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
+import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.util.Neo4j;
 
 import java.util.*;

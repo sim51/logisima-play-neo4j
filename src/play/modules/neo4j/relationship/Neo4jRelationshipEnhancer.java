@@ -1,4 +1,4 @@
-package play.modules.neo4j.model;
+package play.modules.neo4j.relationship;
 
 import javassist.CannotCompileException;
 import javassist.CtClass;
@@ -6,6 +6,7 @@ import javassist.CtField;
 import play.Logger;
 import play.classloading.ApplicationClasses.ApplicationClass;
 import play.modules.neo4j.exception.Neo4jPlayException;
+import play.modules.neo4j.model.Neo4jEnhancer;
 
 import java.lang.reflect.Modifier;
 

@@ -1,4 +1,4 @@
-package play.modules.neo4j.model;
+package play.modules.neo4j.relationship;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.neo4j.graphdb.DynamicRelationshipType;
@@ -13,6 +13,7 @@ import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.annotation.StartNode;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
+import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.util.Neo4j;
 
 import java.lang.reflect.Constructor;

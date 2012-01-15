@@ -1,6 +1,10 @@
 package play.modules.neo4j.util;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.neo4j.graphdb.Direction;
@@ -14,26 +18,14 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
 import play.Logger;
-import play.Play;
 import play.modules.neo4j.annotation.RelatedTo;
 import play.modules.neo4j.annotation.RelatedToVia;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
-import play.modules.neo4j.model.Relation;
+import play.modules.neo4j.relationship.Relation;
 
-<<<<<<< HEAD
 public class Neo4jFactory {
-=======
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.*;
-
-public class Neo4jFactoryForEntity {
->>>>>>> aa293e3863d449c8622672a2fc1730b89627ac5e
-
-    private static String           className;
 
     /**
      * Reference node for all object.
@@ -51,29 +43,32 @@ public class Neo4jFactoryForEntity {
     private static RelationshipType ref2node;
 
     /**
+     * Class of the Neo4j Entity
+     */
+    private Class                   clazz;
+
+    /**
      * Name of the key property on each object.
      */
     public final static String      NODE_KEY_COUNTER  = "KEY_COUNTER";
     public final static String      NODE_CLASS_NAME   = "CLASSNAME";
-    private Class                   clazz;
     private final static String     REFERENCE_KEYWORD = "_REF";
 
-    public Neo4jFactoryForEntity(Class clazz) {
+    /**
+     * Constructor of the Factory.
+     * 
+     * @param clazz
+     */
+    public Neo4jFactory(Class clazz) {
         this.clazz = clazz;
         GraphDatabaseService graphDb = Neo4j.db();
 
         if (this.clazz != null && this.clazz.getSimpleName() != null) {
             String className = this.clazz.getSimpleName().toUpperCase();
-<<<<<<< HEAD
-            this.root2ref = DynamicRelationshipType.withName(className + REFERENCE_KEYWORD);
-            this.ref2node = DynamicRelationshipType.withName(className);
-        }
-        else {
-=======
             this.root2ref = getRelationshipTypeFromRootToRef(className);
             this.ref2node = getRelationshipTypeFromRefToNode(className);
-        } else {
->>>>>>> aa293e3863d449c8622672a2fc1730b89627ac5e
+        }
+        else {
             throw new Neo4jPlayException(
                     "Factory class that extends AbstractNeo4jFactory must have the annotation @Neo4jFactory correctly configure !!!");
         }
@@ -100,6 +95,33 @@ public class Neo4jFactoryForEntity {
         }
     }
 
+    public static DynamicRelationshipType getRelationshipTypeFromRefToNode(String className) {
+        return DynamicRelationshipType.withName(className);
+    }
+
+    public static DynamicRelationshipType getRelationshipTypeFromRootToRef(String className) {
+        return getRelationshipTypeFromRefToNode(className + REFERENCE_KEYWORD);
+    }
+
+    /**
+     * Method to retrieve a node by a key.
+     * 
+     * @param key the idenfifier of the node
+     * @param indexName Name of the index on wich to search
+     * @return
+     */
+    public Node getByKey(Long key, String indexName) {
+        Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
+        Node node = indexNode.get("key", key).getSingle();
+        return node;
+    }
+
+    /**
+     * Retrive all node ! Be carefull there is no limitation, so if you have a million of node, this method return a
+     * million of node !
+     * 
+     * @return
+     */
     public <T extends Neo4jModel> List<T> findAll() {
         List<T> elements = new ArrayList<T>();
         Iterator<Relationship> relationships = referenceNode.getRelationships(ref2node, Direction.OUTGOING).iterator();
@@ -110,64 +132,6 @@ public class Neo4jFactoryForEntity {
             elements.add(model);
         }
         return elements;
-    }
-
-    public static DynamicRelationshipType getRelationshipTypeFromRefToNode(String className) {
-        return DynamicRelationshipType.withName(className);
-    }
-
-    public static DynamicRelationshipType getRelationshipTypeFromRootToRef(String className) {
-        return getRelationshipTypeFromRefToNode(className + REFERENCE_KEYWORD);
-    }
-
-
-    public Neo4jModel getByNode(Node node) {
-        if (node == null) {
-            return null;
-        }
-        String className = (String) node.getProperty("clazz");
-        Class clazz = Play.classes.getApplicationClass(className).javaClass;
-        Neo4jModel nodeWrapper;
-        Constructor c;
-        try {
-            c = clazz.getDeclaredConstructor();
-
-            c.setAccessible(true);
-            nodeWrapper = (Neo4jModel) c.newInstance();
-            nodeWrapper.setNode(node);
-            Long key = (Long) node.getProperty("key");
-            nodeWrapper.setKey(key);
-            nodeWrapper.initializeRelations();
-
-            //Add attributes
-            for (Field instanceField : clazz.getFields()) {
-                if (Modifier.isPublic(instanceField.getModifiers()) &&
-                        !instanceField.getName().equals("node") &&
-                        !instanceField.getName().equals("shouldBeSave") &&
-                        !instanceField.getName().equals("$toString0")) {
-                    if (!instanceField.isAnnotationPresent(RelatedTo.class) && !instanceField.isAnnotationPresent(RelatedToVia.class)) {
-                        instanceField.set(nodeWrapper, node.getProperty(instanceField.getName()));
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            return null;
-        }
-        return nodeWrapper;
-    }
-
-    /**
-     * Method to retrieve a node by a key.
-     * 
-     * @param key the idenfifier of the node
-     * @param indexName Name of the index on wich to search
-     * @return
-     */
-    public Neo4jModel getByKey(Long key, String indexName) {
-        Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
-        Node node = indexNode.get("key", key).getSingle();
-        return getByNode(node);
     }
 
     /**
@@ -189,7 +153,7 @@ public class Neo4jFactoryForEntity {
         }
 
         try {
-            // if is a new object (doesn't have a node value), we create the node & generate an auto key
+            // if is a new objetc (doesn't have a node value), we create the node & generate an auto key
             if (isNewNode) {
                 nodeWrapper.setKey(getNextId());
                 nodeWrapper.setNode(Neo4j.db().createNode());
@@ -198,10 +162,8 @@ public class Neo4jFactoryForEntity {
             // setting properties node and stock oldValue into an hashmap for indexes
             for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
                 if (!field.getName().equals("node") && !field.getName().equals("shouldBeSave")
-                        && field.get(nodeWrapper) != null &&
-                        !field.isAnnotationPresent(RelatedTo.class) &&
-                        !field.isAnnotationPresent(RelatedToVia.class)
-                        ) {
+                        && field.get(nodeWrapper) != null && !field.isAnnotationPresent(RelatedTo.class)
+                        && !field.isAnnotationPresent(RelatedToVia.class)) {
                     Object oldValue = nodeWrapper.getNode().getProperty(field.getName(), null);
                     if (oldValue != null) {
                         oldValues.put(field.getName(), oldValue);
@@ -211,7 +173,6 @@ public class Neo4jFactoryForEntity {
             }
             nodeWrapper.getNode().setProperty("clazz", nodeWrapper.getClass().getName());
 
-
             if (isNewNode) {
                 // create the reference 2 node relationship
                 referenceNode.createRelationshipTo(nodeWrapper.getNode(), this.ref2node);
@@ -219,27 +180,13 @@ public class Neo4jFactoryForEntity {
 
             // create indexes ...
             for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
-<<<<<<< HEAD
-
-                // create an index on the field if there is the annotation and field value is not null
-                String indexName = getIndexName(nodeWrapper.getClass().getSimpleName(), field);
-                if (indexName != null && field.get(nodeWrapper) != null) {
-
-                    // create the index
-                    Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
-                    // here we have to remove the index when it's an update, so we take a look at the oldValues map
-                    if (oldValues.get(field.getName()) != null) {
-                        indexNode.remove(nodeWrapper.getNode(), field.getName(), oldValues.get(field.getName())
-                                .toString());
-=======
                 // create an index on the field if there is the annotaton and field value is not null
                 if (Neo4j.isIndexedField(field)) {
                     indexNodeField(nodeWrapper, field, oldValues.get(field.getName()));
                 }
             }
 
-
-            //Update Relation.parent node for relationships RelatedTo
+            // Update Relation.parent node for relationships RelatedTo
             if (isNewNode) {
                 for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
                     if (field.isAnnotationPresent(RelatedTo.class)) {
@@ -247,7 +194,6 @@ public class Neo4jFactoryForEntity {
                         if (relation != null && relation.parent != null) {
                             relation.parent.setNode(nodeWrapper.getNode());
                         }
->>>>>>> aa293e3863d449c8622672a2fc1730b89627ac5e
                     }
                 }
             }
@@ -263,6 +209,14 @@ public class Neo4jFactoryForEntity {
         return nodeWrapper;
     }
 
+    /**
+     * Private method that is use into saveAndIndex method. It create or update the index of a fiield.
+     * 
+     * @param nodeWrapper
+     * @param field
+     * @param oldValue
+     * @throws IllegalAccessException
+     */
     private void indexNodeField(Neo4jModel nodeWrapper, Field field, Object oldValue) throws IllegalAccessException {
         String indexName = Neo4j.getIndexName(nodeWrapper.getClass().getSimpleName(), field);
         if (indexName != null && field.get(nodeWrapper) != null) {
@@ -298,32 +252,6 @@ public class Neo4jFactoryForEntity {
      */
     public Neo4jModel forceDelete(Neo4jModel nodeWrapper) throws Neo4jException {
         return _delete(nodeWrapper, Boolean.TRUE);
-    }
-
-    public void cleanUp() {
-        Transaction tx = Neo4j.db().beginTx();
-        try {
-
-            for (Neo4jModel model : findAll()) {
-                try {
-                    model.delete();
-                } catch (Neo4jException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            Iterator<Relationship> iterator = referenceNode.getRelationships(Direction.INCOMING).iterator();
-            if (iterator != null && iterator.hasNext()) {
-                Relationship relation = iterator.next();
-                Node endNode = relation.getEndNode();
-                relation.delete();
-                endNode.delete();
-            }
-
-            tx.success();
-        } finally {
-            tx.finish();
-        }
     }
 
     /**
@@ -400,6 +328,5 @@ public class Neo4jFactoryForEntity {
         }
         return counter;
     }
-
 
 }
