@@ -231,8 +231,8 @@ public class Neo4jModelEnhancer extends Enhancer {
     private boolean hasNeo4jRelatedAnnotation(CtField ctField) {
         for (Object info : ctField.getAvailableAnnotations()) {
             String annotationName = info.toString();
-            if (annotationName.startsWith("@play.modules.neo4j.annotation.RelatedTo")
-                    || annotationName.startsWith("@play.modules.neo4j.annotation.RelatedToVia")) {
+            if (annotationName.startsWith("@play.modules.neo4j.annotation.Neo4jRelatedTo")
+                    || annotationName.startsWith("@play.modules.neo4j.annotation.Neo4jRelatedToVia")) {
                 return true;
             }
 

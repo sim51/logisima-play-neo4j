@@ -37,7 +37,7 @@ import play.modules.neo4j.util.Neo4j;
 import play.mvc.Router;
 
 /**
- * Neo4j Play! plugin class.
+ * Neo4j Play! plugin class. It's the play entry point of the module for play!.
  * 
  * @author bsimard
  */
@@ -62,8 +62,9 @@ public class Neo4jPlugin extends PlayPlugin {
 
     @Override
     public void enhance(ApplicationClass appClass) throws Exception {
-        // for enhance Neo4jModel class, to add getter/setter on the wrapped node
+        // Enhance Neo4jModel class, to add getter/setter on the wrapped node
         new Neo4jModelEnhancer().enhanceThisClass(appClass);
+        // Enhance Neo4JRelationShip class, to add setter and getter for properties that represent a relaton
         new Neo4jRelationshipEnhancer().enhanceThisClass(appClass);
     }
 

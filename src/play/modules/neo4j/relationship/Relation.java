@@ -34,7 +34,7 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.IteratorUtil;
 
 import play.Logger;
-import play.modules.neo4j.annotation.RelatedTo;
+import play.modules.neo4j.annotation.Neo4jRelatedTo;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
@@ -44,9 +44,9 @@ public class Relation<T extends Neo4jModel> implements Set<T> {
 
     public Neo4jModel parent;
     private List<T>   elements;
-    private RelatedTo relation;
+    private Neo4jRelatedTo relation;
 
-    public Relation(Neo4jModel parent, RelatedTo relation) {
+    public Relation(Neo4jModel parent, Neo4jRelatedTo relation) {
         this.parent = parent;
         this.relation = relation;
         this.elements = new ArrayList<T>();

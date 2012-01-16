@@ -36,8 +36,8 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
 import play.Logger;
-import play.modules.neo4j.annotation.RelatedTo;
-import play.modules.neo4j.annotation.RelatedToVia;
+import play.modules.neo4j.annotation.Neo4jRelatedTo;
+import play.modules.neo4j.annotation.Neo4jRelatedToVia;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
@@ -66,7 +66,7 @@ public class Neo4jFactory {
     private Class                   clazz;
 
     /**
-     * Name of the key property on each object.
+     * Name of keys property on each object.
      */
     public final static String      NODE_KEY_COUNTER  = "KEY_COUNTER";
     public final static String      NODE_CLASS_NAME   = "CLASSNAME";
@@ -180,8 +180,8 @@ public class Neo4jFactory {
             // setting properties node and stock oldValue into an hashmap for indexes
             for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
                 if (!field.getName().equals("node") && !field.getName().equals("shouldBeSave")
-                        && field.get(nodeWrapper) != null && !field.isAnnotationPresent(RelatedTo.class)
-                        && !field.isAnnotationPresent(RelatedToVia.class)) {
+                        && field.get(nodeWrapper) != null && !field.isAnnotationPresent(Neo4jRelatedTo.class)
+                        && !field.isAnnotationPresent(Neo4jRelatedToVia.class)) {
                     Object oldValue = nodeWrapper.getNode().getProperty(field.getName(), null);
                     if (oldValue != null) {
                         oldValues.put(field.getName(), oldValue);
@@ -207,10 +207,10 @@ public class Neo4jFactory {
                 }
             }
 
-            // Update Relation.parent node for relationships RelatedTo
+            // Update Relation.parent node for relationships Neo4jRelatedTo
             if (isNewNode) {
                 for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
-                    if (field.isAnnotationPresent(RelatedTo.class)) {
+                    if (field.isAnnotationPresent(Neo4jRelatedTo.class)) {
                         Relation relation = (Relation) field.get(nodeWrapper);
                         if (relation != null && relation.parent != null) {
                             relation.parent.setNode(nodeWrapper.getNode());

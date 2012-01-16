@@ -25,5 +25,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface StartNode {
+public @interface Neo4jRelatedToVia {
 }

@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface RelatedTo {
+public @interface Neo4jRelatedTo {
 
     String type();
 }

@@ -30,16 +30,21 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 
 import play.Play;
-import play.modules.neo4j.annotation.EndNode;
+import play.modules.neo4j.annotation.Neo4jEndNode;
 import play.modules.neo4j.annotation.Neo4jEdge;
 import play.modules.neo4j.annotation.Neo4jIndex;
-import play.modules.neo4j.annotation.StartNode;
+import play.modules.neo4j.annotation.Neo4jStartNode;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.util.Neo4j;
 import play.modules.neo4j.util.Neo4jUtils;
 
+/**
+ * 
+ * @author Karl COSSE
+ * 
+ */
 public abstract class Neo4jRelationship {
 
     private Neo4jModel   start;
@@ -64,7 +69,7 @@ public abstract class Neo4jRelationship {
         Transaction tx = Neo4j.db().beginTx();
 
         try {
-            // if is a new objetc (doesn't have a node value), we create the node & generate an auto key
+            // if is a new object (doesn't have a node value), we create the node & generate an auto key
             boolean isNewRelationship = true;
             if (isNewRelationship) {
                 Long nextId = getNextId();
@@ -78,7 +83,7 @@ public abstract class Neo4jRelationship {
             // Add attributes
             for (java.lang.reflect.Field field : this.getClass().getFields()) {
                 if (Modifier.isPublic(field.getModifiers()) && !field.getName().equals("$toString0")
-                        && !field.isAnnotationPresent(StartNode.class) && !field.isAnnotationPresent(EndNode.class)) {
+                        && !field.isAnnotationPresent(Neo4jStartNode.class) && !field.isAnnotationPresent(Neo4jEndNode.class)) {
                     this.getRelationship().setProperty(field.getName(), field.get(this));
                 }
             }
@@ -146,10 +151,10 @@ public abstract class Neo4jRelationship {
                 for (Field instanceField : clazz.getFields()) {
                     if (Modifier.isPublic(instanceField.getModifiers()) && !instanceField.getName().equals("node")
                             && !instanceField.getName().equals("$toString0")) {
-                        if (instanceField.isAnnotationPresent(StartNode.class)) {
+                        if (instanceField.isAnnotationPresent(Neo4jStartNode.class)) {
                             instanceField.set(instance, instance.start);
                         }
-                        else if (instanceField.isAnnotationPresent(EndNode.class)) {
+                        else if (instanceField.isAnnotationPresent(Neo4jEndNode.class)) {
                             instanceField.set(instance, instance.end);
                         }
                         else {

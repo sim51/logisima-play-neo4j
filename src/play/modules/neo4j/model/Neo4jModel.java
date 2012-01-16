@@ -28,11 +28,10 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
-import play.Logger;
 import play.Play;
 import play.modules.neo4j.annotation.Neo4jIndex;
-import play.modules.neo4j.annotation.RelatedTo;
-import play.modules.neo4j.annotation.RelatedToVia;
+import play.modules.neo4j.annotation.Neo4jRelatedTo;
+import play.modules.neo4j.annotation.Neo4jRelatedToVia;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.relationship.Neo4jRelationship;
@@ -65,7 +64,15 @@ public abstract class Neo4jModel {
      * Boolean to know if the pojo as been changed, and so if the <code>save</code> method should be invoke.
      */
     public Boolean shouldBeSave = Boolean.FALSE;
+
+    /**
+     * 
+     */
     private String relationshipName;
+
+    /**
+     * 
+     */
     private String relationshipClass;
 
     /**
@@ -86,41 +93,98 @@ public abstract class Neo4jModel {
         initializeRelations();
     }
 
-    public void initializeRelations() {
+    /**
+     * Initialize relation for model.
+     */
+    private void initializeRelations() {
+        // for all ield, we look at it to see if there are some Related annotation
         for (java.lang.reflect.Field field : this.getClass().getFields()) {
-            RelatedTo relatedTo = field.getAnnotation(RelatedTo.class);
+            Neo4jRelatedTo relatedTo = field.getAnnotation(Neo4jRelatedTo.class);
             if (relatedTo != null) {
                 try {
+                    // we set the default property with a new Relation ship Object
                     field.set(this, new Relation<Neo4jModel>(this, relatedTo));
                 } catch (IllegalAccessException e) {
-                    Logger.error("Erreur !" + e.getMessage());
+                    throw new Neo4jPlayException(e);
                 }
             }
 
-            RelatedToVia relatedToVia = field.getAnnotation(RelatedToVia.class);
+            Neo4jRelatedToVia relatedToVia = field.getAnnotation(Neo4jRelatedToVia.class);
             if (relatedToVia != null && field.getType().toString().contains("Iterator")) {
                 try {
+                    // we set the default property with a new Relation ship Object
                     String className = field.getGenericType().toString().replace("java.util.Iterator<", "")
                             .replace(">", "");
                     field.set(this, getIterator(className));
                 } catch (IllegalAccessException e) {
-                    Logger.error("Erreur !" + e.getMessage());
+                    throw new Neo4jPlayException(e);
                 }
             }
         }
     }
 
-    public <T extends play.modules.neo4j.relationship.Neo4jRelationship> Iterator<T> getIterator(String className) {
-        Class clazz = Play.classes.getApplicationClass(className).javaClass;
-        this.relationshipName = play.modules.neo4j.relationship.Neo4jRelationship.calculateRelationshipName(clazz);
-        this.relationshipClass = className;
-
-        if (getNode() == null) {
-            return new NullIterator();
+    /**
+     * Getter for id.
+     */
+    public Long getKey() {
+        if (this.node != null && this.node.getProperty("key", null) != null) {
+            return (Long) this.node.getProperty("key", null);
         }
         else {
-            return new RelationshipIterator();
+            return this.key;
         }
+    }
+
+    /**
+     * Setter for id.
+     * 
+     * @param id
+     */
+    public void setKey(Long id) {
+        this.key = id;
+    }
+
+    /**
+     * Getter for underlying node.
+     * 
+     * @return
+     */
+    public Node getNode() {
+        return node;
+    }
+
+    /**
+     * Setter for node.
+     * 
+     * @param node
+     */
+    public void setNode(Node node) {
+        this.node = node;
+    }
+
+    /**
+     * @return the shouldBeSave
+     */
+    public Boolean getShouldBeSave() {
+        return shouldBeSave;
+    }
+
+    /**
+     * Getter for relationshipName.
+     * 
+     * @return
+     */
+    public String getRelationshipName() {
+        return relationshipName;
+    }
+
+    /**
+     * Getter for relationshipclass
+     * 
+     * @return
+     */
+    public String getRelationshipClass() {
+        return relationshipClass;
     }
 
     /**
@@ -131,17 +195,6 @@ public abstract class Neo4jModel {
      */
     public <T extends Neo4jModel> T save() throws Neo4jException {
         this._save();
-        return (T) this;
-    }
-
-    /**
-     * Save method for Neo4jModel.
-     * 
-     * @return the saved object.
-     * @throws Neo4jException
-     */
-    public <T extends Neo4jModel> T delete() throws Neo4jException {
-        this._delete();
         return (T) this;
     }
 
@@ -159,6 +212,17 @@ public abstract class Neo4jModel {
     }
 
     /**
+     * Save method for Neo4jModel.
+     * 
+     * @return the saved object.
+     * @throws Neo4jException
+     */
+    public <T extends Neo4jModel> T delete() throws Neo4jException {
+        this._delete();
+        return (T) this;
+    }
+
+    /**
      * Delete an Neo4j node. This method is private. @see <code>delete()</code> method.
      * 
      * @return the deleted object
@@ -170,11 +234,38 @@ public abstract class Neo4jModel {
         this.node = null;
     }
 
+    /**
+     * FindAll method for Neo4jModel.
+     * 
+     * @return
+     */
+    public static <T extends Neo4jModel> List<T> findAll() {
+        throw new Neo4jPlayException("findAll() Must be overriden by Neo4jModelEnhancer");
+    }
+
+    /**
+     * Find all nodes. Becarefull there is no limitation. SO if you have a millon of node, this metod return a million
+     * of item ...
+     * 
+     * @param <T>
+     * @return
+     */
     protected static <T extends Neo4jModel> List<T> _findAll(String className) throws Neo4jException {
         List<T> elements = new ArrayList<T>();
         Neo4jFactory factory = getFactory(className);
         elements = (List<T>) factory.findAll();
         return elements;
+    }
+
+    /**
+     * Method to retrieve a node by its key.
+     * 
+     * @param key
+     * @return
+     * @throws Neo4jException
+     */
+    public static <T extends Neo4jModel> T getByKey(Long key) throws Neo4jException {
+        throw new Neo4jPlayException("getByKey() Must be overriden by Neo4jModelEnhancer");
     }
 
     /**
@@ -247,31 +338,19 @@ public abstract class Neo4jModel {
     }
 
     /**
-     * CleanUp delete the reference node and childrens (and relationships)
+     * ?????
      */
-    public static void cleanUp() {
-        throw new Neo4jPlayException("cleanUp() Must be overriden by Neo4jModelEnhancer");
-    }
+    public <T extends Neo4jRelationship> Iterator<T> getIterator(String className) {
+        Class clazz = Play.classes.getApplicationClass(className).javaClass;
+        this.relationshipName = Neo4jRelationship.calculateRelationshipName(clazz);
+        this.relationshipClass = className;
 
-    /**
-     * Find all nodes
-     * 
-     * @param <T>
-     * @return
-     */
-    public static <T extends Neo4jModel> List<T> findAll() {
-        throw new Neo4jPlayException("findAll() Must be overriden by Neo4jModelEnhancer");
-    }
-
-    /**
-     * Public method to retrieve a node by its key.
-     * 
-     * @param key
-     * @return
-     * @throws Neo4jException
-     */
-    public static <T extends Neo4jModel> T getByKey(Long key) throws Neo4jException {
-        throw new Neo4jPlayException("getByKey() Must be overriden by Neo4jModelEnhancer");
+        if (getNode() == null) {
+            return new NullIterator();
+        }
+        else {
+            return new RelationshipIterator();
+        }
     }
 
     private static class NullIterator implements Iterator {
@@ -313,59 +392,5 @@ public abstract class Neo4jModel {
         public void remove() {
             iterator.remove();
         }
-    }
-
-    public String getRelationshipName() {
-        return relationshipName;
-    }
-
-    public String getRelationshipClass() {
-        return relationshipClass;
-    }
-
-    /**
-     * Getter for id.
-     */
-    public Long getKey() {
-        if (this.node != null && this.node.getProperty("key", null) != null) {
-            return (Long) this.node.getProperty("key", null);
-        }
-        else {
-            return this.key;
-        }
-    }
-
-    /**
-     * Setter for id.
-     * 
-     * @param id
-     */
-    public void setKey(Long id) {
-        this.key = id;
-    }
-
-    /**
-     * Getter for underlying node.
-     * 
-     * @return
-     */
-    public Node getNode() {
-        return node;
-    }
-
-    /**
-     * Setter for node.
-     * 
-     * @param node
-     */
-    public void setNode(Node node) {
-        this.node = node;
-    }
-
-    /**
-     * @return the shouldBeSave
-     */
-    public Boolean getShouldBeSave() {
-        return shouldBeSave;
     }
 }

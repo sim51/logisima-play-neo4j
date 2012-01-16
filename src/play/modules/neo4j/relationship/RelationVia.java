@@ -34,8 +34,8 @@ import org.neo4j.graphdb.StopEvaluator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.IteratorUtil;
 
-import play.modules.neo4j.annotation.EndNode;
-import play.modules.neo4j.annotation.RelatedToVia;
+import play.modules.neo4j.annotation.Neo4jEndNode;
+import play.modules.neo4j.annotation.Neo4jRelatedToVia;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
@@ -45,9 +45,9 @@ public class RelationVia<T extends Neo4jModel> implements Set<T> {
 
     private Neo4jModel   parent;
     private List<T>      elements;
-    private RelatedToVia relation;
+    private Neo4jRelatedToVia relation;
 
-    public RelationVia(Neo4jModel parent, RelatedToVia relation) {
+    public RelationVia(Neo4jModel parent, Neo4jRelatedToVia relation) {
         this.parent = parent;
         this.relation = relation;
     }
@@ -91,7 +91,7 @@ public class RelationVia<T extends Neo4jModel> implements Set<T> {
             Relationship relationship = getEndNode(element).createRelationshipTo(getStartNode(), getRelationshipType());
             // Add attributes
             for (java.lang.reflect.Field field : element.getClass().getFields()) {
-                if (field.getAnnotation(EndNode.class) == null) {
+                if (field.getAnnotation(Neo4jEndNode.class) == null) {
                     relationship.setProperty(field.getName(), field.get(element));
                 }
             }
@@ -116,24 +116,24 @@ public class RelationVia<T extends Neo4jModel> implements Set<T> {
 
     private Node getEndNode(T element) {
         // Find end Node in class
-        EndNode endNode = null;
+        Neo4jEndNode endNode = null;
         for (java.lang.reflect.Field field : element.getClass().getFields()) {
-            endNode = field.getAnnotation(EndNode.class);
+            endNode = field.getAnnotation(Neo4jEndNode.class);
             if (endNode != null) {
                 try {
                     Object endObject = field.get(element);
                     if (endObject == null) {
-                        throw new Neo4jPlayException("Oups, EndNode undefined");
+                        throw new Neo4jPlayException("Oups, Neo4jEndNode undefined");
                     }
                     return ((Neo4jModel) endObject).getNode();
                 } catch (IllegalAccessException e) {
-                    throw new Neo4jPlayException("Please @EndNode must extend Neo4jModel");
+                    throw new Neo4jPlayException("Please @Neo4jEndNode must extend Neo4jModel");
                 } catch (ClassCastException e) {
                     throw new Neo4jPlayException("Oups  ");
                 }
             }
         }
-        throw new Neo4jPlayException("Please Annotate your model with @EndNode field");
+        throw new Neo4jPlayException("Please Annotate your model with @Neo4jEndNode field");
     }
 
     @Override
