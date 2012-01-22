@@ -29,22 +29,36 @@ import play.classloading.enhancers.PropertiesEnhancer.PlayPropertyAccessor;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 
+/**
+ * Binder class for play neo4j module. Transform a map of properties into an Neo4j Model object.
+ * 
+ * @author bsimard
+ * 
+ */
 public class Binder {
 
     final static int           notaccessibleMethod = Modifier.NATIVE | Modifier.STATIC;
 
+    /**
+     * The class of the object that we want to bind. It must be an assignable class of <code>Neo4jModel</code>.
+     */
     private Class              clazz;
+
+    /**
+     * Map that represent all class ttributes.
+     */
     public Map<String, Method> properties          = new HashMap<String, Method>();
 
     /**
      * Binder constructor. Ths constructor take the class and populate all other attributes. Class must be an assignable
-     * class of <code>Neo4jModel</code> (but there is no check nto this class, it must be done upper).
+     * class of <code>Neo4jModel</code> (but there is no check into this class, it must be done upper).
      * 
      * @param clazz
      */
     public Binder(Class clazz) {
-        super();
+        // setting clazz
         this.clazz = clazz;
+
         // setting class attributs
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {

@@ -18,23 +18,52 @@
  */
 package play.modules.neo4j.util;
 
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 
+import play.Play;
 import play.modules.neo4j.annotation.Neo4jIndex;
-import play.modules.neo4j.exception.Neo4jPlayException;
+import play.modules.neo4j.model.Neo4jFactory;
 
+/**
+ * Util class, that implements static method that help to get some infos about Node and relations.
+ * 
+ * @author bsimard
+ * 
+ */
 public class Neo4jUtils {
 
-    public static String getClassNameFromNode(Node node) {
+    /**
+     * Method that return the class of a node.
+     * 
+     * @param node
+     * @return
+     */
+    public static Class getClassNameFromNode(Node node) {
         if (node == null) {
             return null;
         }
-        if (!node.hasProperty("clazz")) {
-            throw new Neo4jPlayException("This node don't have the clazz property !");
+        for (Relationship relation : node.getRelationships(Direction.INCOMING)) {
+            Node startNode = relation.getStartNode();
+            if (startNode.hasProperty(Neo4jFactory.NODE_KEY_COUNTER)
+                    && startNode.hasProperty(Neo4jFactory.NODE_CLASS_NAME)) {
+                String className = (String) startNode.getProperty(Neo4jFactory.NODE_CLASS_NAME);
+                Class clazz = Play.classes.getApplicationClass(className).javaClass;
+                return clazz;
+            }
+
         }
-        return (String) node.getProperty("clazz");
+        return null;
+
     }
 
+    /**
+     * Is this field has an index annotation ?
+     * 
+     * @param field
+     * @return <code>TRUE</code> if the field has a <code>Neo4jIndexe</code> annotation, <code>FALSE</code> otherwise.
+     */
     public static boolean isIndexedField(java.lang.reflect.Field field) {
         return field.getAnnotation(Neo4jIndex.class) != null;
     }

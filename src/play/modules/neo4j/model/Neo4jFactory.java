@@ -16,7 +16,7 @@
  * 
  * @See https://github.com/sim51/logisima-play-neo4j
  */
-package play.modules.neo4j.util;
+package play.modules.neo4j.model;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -40,8 +40,9 @@ import play.modules.neo4j.annotation.Neo4jRelatedTo;
 import play.modules.neo4j.annotation.Neo4jRelatedToVia;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
-import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.relationship.Relation;
+import play.modules.neo4j.util.Neo4j;
+import play.modules.neo4j.util.Neo4jUtils;
 
 public class Neo4jFactory {
 
@@ -83,8 +84,8 @@ public class Neo4jFactory {
 
         if (this.clazz != null && this.clazz.getSimpleName() != null) {
             String className = this.clazz.getSimpleName().toUpperCase();
-            this.root2ref = getRelationshipTypeFromRootToRef(className);
-            this.ref2node = getRelationshipTypeFromRefToNode(className);
+            this.root2ref = DynamicRelationshipType.withName(className + REFERENCE_KEYWORD);
+            this.ref2node = DynamicRelationshipType.withName(className);
         }
         else {
             throw new Neo4jPlayException(
@@ -113,14 +114,6 @@ public class Neo4jFactory {
         }
     }
 
-    public static DynamicRelationshipType getRelationshipTypeFromRefToNode(String className) {
-        return DynamicRelationshipType.withName(className);
-    }
-
-    public static DynamicRelationshipType getRelationshipTypeFromRootToRef(String className) {
-        return getRelationshipTypeFromRefToNode(className + REFERENCE_KEYWORD);
-    }
-
     /**
      * Method to retrieve a node by a key.
      * 
@@ -139,8 +132,9 @@ public class Neo4jFactory {
      * million of node !
      * 
      * @return
+     * @throws Neo4jException
      */
-    public <T extends Neo4jModel> List<T> findAll() {
+    public <T extends Neo4jModel> List<T> findAll() throws Neo4jException {
         List<T> elements = new ArrayList<T>();
         Iterator<Relationship> relationships = referenceNode.getRelationships(ref2node, Direction.OUTGOING).iterator();
         while (relationships.hasNext()) {
@@ -171,7 +165,7 @@ public class Neo4jFactory {
         }
 
         try {
-            // if is a new objetc (doesn't have a node value), we create the node & generate an auto key
+            // if is a new object (doesn't have a node value), we create the node & generate an auto key
             if (isNewNode) {
                 nodeWrapper.setKey(getNextId());
                 nodeWrapper.setNode(Neo4j.db().createNode());
@@ -189,10 +183,6 @@ public class Neo4jFactory {
                     nodeWrapper.getNode().setProperty(field.getName(), field.get(nodeWrapper));
                 }
             }
-
-            // TODO : delete thiss line !!! There is nothing to do here. Database contains only data not dev helper or
-            // in proper manner to not duplicate it
-            nodeWrapper.getNode().setProperty("clazz", nodeWrapper.getClass().getName());
 
             if (isNewNode) {
                 // create the reference 2 node relationship
@@ -231,7 +221,7 @@ public class Neo4jFactory {
     }
 
     /**
-     * Private method that is use into saveAndIndex method. It create or update the index of a fiield.
+     * Private method that is use into saveAndIndex method. It create or update the index of a field.
      * 
      * @param nodeWrapper
      * @param field

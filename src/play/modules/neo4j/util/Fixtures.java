@@ -57,6 +57,9 @@ public class Fixtures {
     private static final String        RELATION_TYPE_VALUE_KEY = "value";
     private static Map<String, Object> idCache                 = new HashMap<String, Object>();
 
+    /**
+     * Delete all the database, node by node.
+     */
     public static void deleteDatabase() {
         Neo4j.clear();
     }

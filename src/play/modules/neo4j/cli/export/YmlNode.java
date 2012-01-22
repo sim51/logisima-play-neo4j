@@ -23,7 +23,7 @@ import java.util.Iterator;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Relationship;
 
-import play.modules.neo4j.util.Neo4jFactory;
+import play.modules.neo4j.model.Neo4jFactory;
 
 public class YmlNode {
 

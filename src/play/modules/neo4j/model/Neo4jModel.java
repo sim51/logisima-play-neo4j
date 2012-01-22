@@ -18,6 +18,7 @@
  */
 package play.modules.neo4j.model;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,7 +38,6 @@ import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.relationship.Neo4jRelationship;
 import play.modules.neo4j.relationship.Relation;
 import play.modules.neo4j.util.Neo4j;
-import play.modules.neo4j.util.Neo4jFactory;
 import play.modules.neo4j.util.Neo4jUtils;
 
 /**
@@ -97,7 +97,7 @@ public abstract class Neo4jModel {
      * Initialize relation for model.
      */
     private void initializeRelations() {
-        // for all ield, we look at it to see if there are some Related annotation
+        // for all field, we look at it to see if there are some Related annotation
         for (java.lang.reflect.Field field : this.getClass().getFields()) {
             Neo4jRelatedTo relatedTo = field.getAnnotation(Neo4jRelatedTo.class);
             if (relatedTo != null) {
@@ -235,7 +235,8 @@ public abstract class Neo4jModel {
     }
 
     /**
-     * FindAll method for Neo4jModel.
+     * FindAll method for Neo4jModel. Becarefull there is no limitation. So if you have a millon of node, this metod
+     * return a million of item ...
      * 
      * @return
      */
@@ -244,7 +245,7 @@ public abstract class Neo4jModel {
     }
 
     /**
-     * Find all nodes. Becarefull there is no limitation. SO if you have a millon of node, this metod return a million
+     * Find all nodes. Becarefull there is no limitation. So if you have a millon of node, this metod return a million
      * of item ...
      * 
      * @param <T>
@@ -281,19 +282,24 @@ public abstract class Neo4jModel {
     }
 
     /**
-     * Retrieve a node from the graph
+     * Retrieve a Neo4jModel from a node.
      * 
      * @param node
      * @return
+     * @throws Neo4jException
      */
-    public static Neo4jModel getByNode(Node node) {
-        String className = Neo4jUtils.getClassNameFromNode(node);
-        if (className == null) {
-            return null;
+    public static Neo4jModel getByNode(Node node) throws Neo4jException {
+        Class clazz = Neo4jUtils.getClassNameFromNode(node);
+        Neo4jModel nodeWrapper = null;
+        try {
+            Constructor c;
+            c = clazz.getDeclaredConstructor(Node.class);
+            c.setAccessible(true);
+            nodeWrapper = (Neo4jModel) c.newInstance(node);
+        } catch (Exception e) {
+            throw new Neo4jException(e);
         }
-        // TODO : delete this method cause it's do nothing. If we want a Neo4jModel, we just have to create one and set
-        // the node property.
-        return null;
+        return nodeWrapper;
     }
 
     /**

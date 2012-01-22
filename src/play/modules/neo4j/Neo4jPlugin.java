@@ -71,7 +71,7 @@ public class Neo4jPlugin extends PlayPlugin {
     @Override
     public void onRoutesLoaded() {
         if (Play.mode == Mode.DEV) {
-            // adding some route for
+            // adding some route
             Logger.debug("adding routes for Neo4j plugin");
             Router.addRoute("GET", "/@neo4j/console", "controllers.module.neo4j.Neo4jController.console");
         }
