@@ -60,7 +60,7 @@ public class Binder {
         this.clazz = clazz;
 
         // setting class attributs
-        Method[] methods = clazz.getDeclaredMethods();
+        Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             String propertyname;
             if (!isSetter(method)) {
@@ -105,7 +105,7 @@ public class Binder {
         try {
             Neo4jModel model = (Neo4jModel) o;
             if (model == null) {
-                if (params.containsKey(name + ".key")) {
+                if (params.containsKey(name + ".key") && !params.get(name + ".key")[0].isEmpty()) {
                     Long key = Long.valueOf(params.get(name + ".key")[0]);
                     // searching getByKey Model method and invoke it
                     Method getByKey = clazz.getMethod("getByKey", Long.class);
@@ -122,21 +122,24 @@ public class Binder {
             }
             // We iterate on all params and search the setter into the class
             for (String param : params.keySet()) {
-                String paramName = param.replace(name + ".", "");
-                if (this.properties.containsKey(paramName)) {
-                    Method setter = this.properties.get(paramName);
-                    if (setter != null) {
-                        Logger.debug("Invoke setter " + paramName + "for bind object " + name);
-                        setter.invoke(model, params.get(param));
+                // if the params is a model property
+                if (param.startsWith(name + ".") && !param.equals(name + ".key")) {
+                    String paramName = param.replace(name + ".", "");
+                    if (this.properties.containsKey(paramName)) {
+                        Method setter = this.properties.get(paramName);
+                        if (setter != null) {
+                            Logger.debug("Invoke setter " + paramName + "for bind object " + name);
+                            setter.invoke(model, params.get(param));
+                        }
+                        else {
+                            throw new Neo4jPlayException("Setter for " + paramName + " can't be found into Neo4jModel "
+                                    + clazz.getSimpleName());
+                        }
                     }
                     else {
-                        throw new Neo4jPlayException("Setter for " + paramName + " can't be found into Neo4jModel "
+                        throw new Neo4jPlayException("Property " + paramName + " can't be found into Neo4jModel "
                                 + clazz.getSimpleName());
                     }
-                }
-                else {
-                    throw new Neo4jPlayException("Property " + paramName + " can't be found into Neo4jModel "
-                            + clazz.getSimpleName());
                 }
             }
             return model;

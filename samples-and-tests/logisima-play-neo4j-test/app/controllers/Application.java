@@ -24,7 +24,12 @@ public class Application extends Controller {
     }
 
     public static void addUser() throws Neo4jException {
-        render();
+        render("Application/editUser.html");
+    }
+
+    public static void saveUser(User user) throws Neo4jException {
+        user.save();
+        user(user.key);
     }
 
     public static void deleteUser(Long key) throws Neo4jException {

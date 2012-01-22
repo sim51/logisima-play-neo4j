@@ -1,0 +1,27 @@
+#{extends 'main.html' /}
+#{set title:'User' /}
+
+<h1>User ${user?.login}</h1>
+
+<form name="user" method="POST" action=@{Application.saveUser()}>
+    
+    <input type="hidden" name="user.key" value="${user?.key}" />
+    
+    <label for="login">Login</label>
+    <input type="text" name="user.login" id="login" value="${user?.login}"/>
+    <br/>
+    
+    <label for="firstname">Firstanme</label>
+    <input type="text" name="user.firstname" id="firstname" value="${user?.firstname}"/>
+    <br/>
+    
+    <label for="lastname">Lastname</label>
+    <input type="text" name="user.lastname" id="lastname" value="${user?.lastname}"/>
+    <br/>
+    
+    <label for="email">Email</label>
+    <input type="text" name="user.email" id="email" value="${user?.email}"/>
+    <br/>
+    
+    <input type="submit" value="Submit"/>
+</form>
