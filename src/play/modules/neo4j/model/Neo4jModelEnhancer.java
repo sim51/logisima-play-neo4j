@@ -162,7 +162,8 @@ public class Neo4jModelEnhancer extends Enhancer {
                             //@formatter:off
                             code = "public " + ctField.getType().getName() + " " + getter + "() {" +
                                                 "if(this." + ctField.getName() + " == null){" +
-                                                    "return play.modules.neo4j.relationship.getModelsFromRelatedTo(" + relatedTo.value() + ", " + relatedTo.direction() + ", this." + ctField.getName() + ", this.node);" +
+                                                    "java.lang.reflect.Field field = this.getClass().getField(\"" +ctField.getName() + "\");" + 
+                                                    "return play.modules.neo4j.relationship.Neo4jRelationFactory.getModelsFromRelatedTo(\"" + relatedTo.value() + "\", \"" + relatedTo.direction() + "\", field, this.node);" +
                                                 "}else{" +
                                                     "return " + ctField.getName() + ";" +
                                                 "}" +

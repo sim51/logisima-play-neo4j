@@ -22,10 +22,10 @@ public class User extends Neo4jModel {
     @Neo4jRelatedTo("IS_FAMILLY")
     public List<User> famillies;
 
-    @Neo4jRelatedTo("IS_COLLEAGE")
+    @Neo4jRelatedTo(value = "IS_A_COLLEAGE", lazy = true)
     public List<User> colleages;
 
-    @Neo4jRelatedTo("IS_CLASSMATE")
+    @Neo4jRelatedTo("IS_A_CLASSMATE")
     public List<User> classmates;
 
 }
