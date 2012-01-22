@@ -18,6 +18,38 @@
  */
 package play.modules.neo4j.cli.export;
 
+import org.neo4j.graphdb.Relationship;
+
 public class YmlRelation {
+
+    public String   id;
+    private YmlNode startNode;
+    private YmlNode endNode;
+    private String  relationName;
+
+    /**
+     * Constructor.
+     */
+    public YmlRelation(Relationship relation) {
+        this.id = "" + relation.getId();
+        this.startNode = new YmlNode(relation.getStartNode());
+        this.endNode = new YmlNode(relation.getEndNode());
+        this.relationName = relation.getType().name();
+    }
+
+    /**
+     * Convert <code>Relation</code> to YML format.
+     * 
+     * @return an yml string that represent the <code>Relation</code>.
+     */
+    public String toYml() {
+        System.out.println("Generate yml for relation " + id);
+        String yml = "\nRelation(" + this.id + "):\n";
+        yml += "\n Type: " + relationName;
+        yml += "\n From: " + startNode.id;
+        yml += "\n To: " + endNode.id;
+        yml += "\n";
+        return yml;
+    }
 
 }

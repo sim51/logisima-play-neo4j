@@ -22,6 +22,7 @@ import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
+import play.Logger;
 import play.Play;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.model.Neo4jFactory;
@@ -49,6 +50,7 @@ public class Neo4jUtils {
             if (startNode.hasProperty(Neo4jFactory.NODE_KEY_COUNTER)
                     && startNode.hasProperty(Neo4jFactory.NODE_CLASS_NAME)) {
                 String className = (String) startNode.getProperty(Neo4jFactory.NODE_CLASS_NAME);
+                Logger.debug("Node model class name is " + className);
                 Class clazz = Play.classes.getApplicationClass(className).javaClass;
                 return clazz;
             }
