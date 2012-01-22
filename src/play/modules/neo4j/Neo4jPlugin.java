@@ -31,7 +31,6 @@ import play.PlayPlugin;
 import play.classloading.ApplicationClasses.ApplicationClass;
 import play.modules.neo4j.model.Neo4jModel;
 import play.modules.neo4j.model.Neo4jModelEnhancer;
-import play.modules.neo4j.relationship.Neo4jRelationshipEnhancer;
 import play.modules.neo4j.util.Binder;
 import play.modules.neo4j.util.Neo4j;
 import play.mvc.Router;
@@ -64,8 +63,6 @@ public class Neo4jPlugin extends PlayPlugin {
     public void enhance(ApplicationClass appClass) throws Exception {
         // Enhance Neo4jModel class, to add getter/setter on the wrapped node
         new Neo4jModelEnhancer().enhanceThisClass(appClass);
-        // Enhance Neo4JRelationShip class, to add setter and getter for properties that represent a relaton
-        new Neo4jRelationshipEnhancer().enhanceThisClass(appClass);
     }
 
     @Override

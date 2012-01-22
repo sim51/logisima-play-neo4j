@@ -94,7 +94,9 @@ public class Neo4j {
         try {
             // for all node, we first delete all relation, and after we delete the node
             for (Node node : db().getAllNodes()) {
+                Logger.debug("Deleting node " + node.getId());
                 for (Relationship relation : node.getRelationships()) {
+                    Logger.debug("Deleting relation " + relation.getId() + " for node " + node.getId());
                     relation.delete();
                 }
                 // if node is the reference, we doesn't delete it, but we reset its properties
@@ -111,13 +113,16 @@ public class Neo4j {
             // Deleting indexes
             String[] nodeIndexNames = Neo4j.db().index().nodeIndexNames();
             for (int i = 0; i < nodeIndexNames.length; i++) {
+                Logger.debug("Deleting node index  " + nodeIndexNames[i]);
                 Neo4j.db().index().forNodes(nodeIndexNames[i]).delete();
             }
             String[] relationIdexNames = Neo4j.db().index().relationshipIndexNames();
             for (int j = 0; j < relationIdexNames.length; j++) {
+                Logger.debug("Deleting relation index  " + nodeIndexNames[j]);
                 Neo4j.db().index().forNodes(relationIdexNames[j]).delete();
             }
             tx.success();
+            Logger.debug("Deletion commiting");
         } finally {
             tx.finish();
         }

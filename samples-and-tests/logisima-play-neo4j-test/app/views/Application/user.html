@@ -12,27 +12,41 @@
 	<li><a href="@{Application.addUser()}">Add a User</a></li>
 </ul>
 
-<table>
-    <th>
-        <td>Firstname</td>
-        <td>Lastname</td>
-        <td>email</td>
-        <td>action</td>
-    </th>
-
-    #{list items:users, as:'user'}
-        <tr>
-            <td><a href="@{Application.user(user.key)}" title="View profile">${user.firstname}</a></td>
-            <td><a href="@{Application.user(user.key)}" title="View profile">${user.lastname}</a></td>
-            <td><a href="@{Application.user(user.key)}" title="View profile">${user.email}</a></td>
-            <td>
-                <a href="@{Application.editUser(user.key)}" title="Edit">
-                    <img src="@{'/public//images/pencil.png'}" alt="Edit"/>
-                </a>
-                <a href="@{Application.deleteUser(user.key)}" title="Delete">
-                    <img src="@{'/public/images/cross.png'}" alt="Delete"/>
-                </a>
-            </td>
-        </tr>
-    #{/list}
-</table>
+<ul>
+    <li><strong>Login : </strong> ${user.login}</li>
+    <li><strong>Firstanme : </strong> ${user.firstname}</li>
+    <li><strong>Lastname : </strong> ${user.lastname}</li>
+    <li><strong>Email : </strong> ${user.email}</li>
+    #{if user.friends.size() > 0}
+    <li>
+        <strong>Friends :</strong>
+        #{list items:user.friends, as:'friend'}
+            <a href="@Application.user(friend.key)">${friend.firstname} ${friend.lastname}</a>&nbsp;
+        #{/list}
+    </li>
+    #{/if}
+    #{if user.famillies.size() > 0}
+    <li>
+        <strong>Famillies :</strong>
+        #{list items:user.famillies, as:'familly'}
+            <a href="@Application.user(familly.key)">${familly.firstname} ${familly.lastname}</a>&nbsp;
+        #{/list}
+    </li>
+    #{/if}
+    #{if user.colleages.size() > 0}
+    <li>
+        <strong>Colleages :</strong>
+        #{list items:user.colleages, as:'colleage'}
+            <a href="@Application.user(colleage.key)">${colleage.firstname} ${colleage.lastname}</a>&nbsp;
+        #{/list}
+    </li>
+    #{/if}
+    #{if user.classmates.size() > 0}
+    <li>
+        <strong>Classmates :</strong>
+        #{list items:user.classmates, as:'classmate'}
+            <a href="@Application.user(classmate.key)">${classmate.firstname} ${classmate.lastname}</a>&nbsp;
+        #{/list}
+    </li>
+    #{/if}
+</ul>

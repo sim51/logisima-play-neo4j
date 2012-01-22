@@ -20,23 +20,18 @@ package play.modules.neo4j.model;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
+import play.Logger;
 import play.Play;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.annotation.Neo4jRelatedTo;
-import play.modules.neo4j.annotation.Neo4jRelatedToVia;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
-import play.modules.neo4j.relationship.Neo4jRelationship;
-import play.modules.neo4j.relationship.Relation;
+import play.modules.neo4j.relationship.Neo4jRelationFactory;
 import play.modules.neo4j.util.Neo4j;
 import play.modules.neo4j.util.Neo4jUtils;
 
@@ -66,16 +61,6 @@ public abstract class Neo4jModel {
     public Boolean shouldBeSave = Boolean.FALSE;
 
     /**
-     * 
-     */
-    private String relationshipName;
-
-    /**
-     * 
-     */
-    private String relationshipClass;
-
-    /**
      * Default constructor for creation.
      */
     public Neo4jModel() {
@@ -100,24 +85,30 @@ public abstract class Neo4jModel {
         // for all field, we look at it to see if there are some Related annotation
         for (java.lang.reflect.Field field : this.getClass().getFields()) {
             Neo4jRelatedTo relatedTo = field.getAnnotation(Neo4jRelatedTo.class);
-            if (relatedTo != null) {
-                try {
-                    // we set the default property with a new Relation ship Object
-                    field.set(this, new Relation<Neo4jModel>(this, relatedTo));
-                } catch (IllegalAccessException e) {
-                    throw new Neo4jPlayException(e);
-                }
-            }
 
-            Neo4jRelatedToVia relatedToVia = field.getAnnotation(Neo4jRelatedToVia.class);
-            if (relatedToVia != null && field.getType().toString().contains("Iterator")) {
-                try {
-                    // we set the default property with a new Relation ship Object
-                    String className = field.getGenericType().toString().replace("java.util.Iterator<", "")
-                            .replace(">", "");
-                    field.set(this, getIterator(className));
-                } catch (IllegalAccessException e) {
-                    throw new Neo4jPlayException(e);
+            // if there is the relation annotation
+            if (relatedTo != null) {
+
+                // if node is not null, then we retrieve relation value
+                if (node != null) {
+                    if (!relatedTo.lazy()) {
+                        try {
+                            field.set(
+                                    this,
+                                    Neo4jRelationFactory.getModelsFromRelatedTo(relatedTo.value(),
+                                            "" + relatedTo.direction(), field, node));
+                        } catch (IllegalAccessException e) {
+                            Logger.error(e.getMessage());
+                        }
+                    }
+                }
+                else {
+                    // create an empty list
+                    try {
+                        field.set(this, new ArrayList());
+                    } catch (IllegalAccessException e) {
+                        Logger.error(e.getMessage());
+                    }
                 }
             }
         }
@@ -167,24 +158,6 @@ public abstract class Neo4jModel {
      */
     public Boolean getShouldBeSave() {
         return shouldBeSave;
-    }
-
-    /**
-     * Getter for relationshipName.
-     * 
-     * @return
-     */
-    public String getRelationshipName() {
-        return relationshipName;
-    }
-
-    /**
-     * Getter for relationshipclass
-     * 
-     * @return
-     */
-    public String getRelationshipClass() {
-        return relationshipClass;
     }
 
     /**
@@ -344,60 +317,4 @@ public abstract class Neo4jModel {
         }
     }
 
-    /**
-     * ?????
-     */
-    public <T extends Neo4jRelationship> Iterator<T> getIterator(String className) {
-        Class clazz = Play.classes.getApplicationClass(className).javaClass;
-        this.relationshipName = Neo4jRelationship.calculateRelationshipName(clazz);
-        this.relationshipClass = className;
-
-        if (getNode() == null) {
-            return new NullIterator();
-        }
-        else {
-            return new RelationshipIterator();
-        }
-    }
-
-    private static class NullIterator implements Iterator {
-
-        @Override
-        public boolean hasNext() {
-            return false;
-        }
-
-        @Override
-        public Object next() {
-            return null;
-        }
-
-        @Override
-        public void remove() {
-
-        }
-    }
-
-    private class RelationshipIterator<T extends Neo4jRelationship> implements Iterator<T> {
-
-        private final Iterator<Relationship> iterator = getNode().getRelationships(
-                                                              DynamicRelationshipType.withName(getRelationshipName()),
-                                                              Direction.OUTGOING).iterator();
-
-        @Override
-        public boolean hasNext() {
-            return iterator.hasNext();
-        }
-
-        @Override
-        public T next() {
-            Relationship nextNode = iterator.next();
-            return T.getFromRelationship(getRelationshipClass(), nextNode);
-        }
-
-        @Override
-        public void remove() {
-            iterator.remove();
-        }
-    }
 }

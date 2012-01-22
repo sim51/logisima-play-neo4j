@@ -27,5 +27,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Neo4jRelatedTo {
 
-    String type();
+    String value() default "";
+
+    boolean lazy() default false;
+
+    String direction() default "OUTGOING";
 }

@@ -34,6 +34,7 @@ import play.Logger;
 import play.classloading.ApplicationClasses.ApplicationClass;
 import play.classloading.enhancers.Enhancer;
 import play.exceptions.UnexpectedException;
+import play.modules.neo4j.annotation.Neo4jRelatedTo;
 
 /**
  * Enhance <code>Neo4jModel</code> to add getter & setter wich are delegate operation to the underlying node (@see
@@ -57,24 +58,20 @@ public class Neo4jModelEnhancer extends Enhancer {
 
         // Add a default constructor if needed
         try {
-            boolean hasDefaultConstructor = false;
-            boolean hasNodeConstructor = false;
             for (CtConstructor constructor : ctClass.getDeclaredConstructors()) {
                 if (constructor.getParameterTypes().length == 0) {
-                    hasDefaultConstructor = true;
+                    ctClass.removeConstructor(constructor);
                 }
                 if (constructor.getParameterTypes().length == 1
                         && constructor.getParameterTypes()[0].getClass().isInstance(Node.class)) {
-                    hasNodeConstructor = true;
+                    ctClass.removeConstructor(constructor);
                 }
             }
-            if (!hasDefaultConstructor && !ctClass.isInterface()) {
+            if (!ctClass.isInterface()) {
                 Logger.debug("Adding default constructor");
                 CtConstructor defaultConstructor = CtNewConstructor.make("public " + ctClass.getSimpleName()
                         + "() { super();}", ctClass);
                 ctClass.addConstructor(defaultConstructor);
-            }
-            if (!hasNodeConstructor && !ctClass.isInterface()) {
                 Logger.debug("Adding node constructor");
                 CtConstructor nodeConstructor = CtNewConstructor.make("public " + ctClass.getSimpleName()
                         + "(org.neo4j.graphdb.Node node) { super(node);}", ctClass);
@@ -156,18 +153,33 @@ public class Neo4jModelEnhancer extends Enhancer {
                     // GETTER for neo4j relation property 
                     // ~~~~~~~
                     if(hasNeo4jRelatedAnnotation(ctField)){
-                        //@formatter:off
-                        String code = "public " + ctField.getType().getName() + " " + getter + "() {" +
-                                            "if(this." + ctField.getName() + " == null){" +
-                                                "return getIterator(\"" + entityName + "\");" +
-                                            "}else{" +
-                                                "return " + ctField.getName() + ";" +
-                                            "}" +
-                                      "}";
-                        //@formatter:on
-                        Logger.debug(code);
-                        CtMethod method = CtMethod.make(code, ctClass);
-                        ctClass.addMethod(method);
+                        Neo4jRelatedTo relatedTo = getRelatedAnnotation(ctField);
+                        if(relatedTo != null){
+                            CtMethod ctMethod = ctClass.getDeclaredMethod(getter);
+                            ctClass.removeMethod(ctMethod);
+                            String code;
+                            if(relatedTo.lazy()){
+                            //@formatter:off
+                            code = "public " + ctField.getType().getName() + " " + getter + "() {" +
+                                                "if(this." + ctField.getName() + " == null){" +
+                                                    "return play.modules.neo4j.relationship.getModelsFromRelatedTo(" + relatedTo.value() + ", " + relatedTo.direction() + ", this." + ctField.getName() + ", this.node);" +
+                                                "}else{" +
+                                                    "return " + ctField.getName() + ";" +
+                                                "}" +
+                                          "}";
+                            //@formatter:on
+                            }
+                            else {
+                                //@formatter:off
+                                code = "public " + ctField.getType().getName() + " " + getter + "() {" +
+                                            "return " + ctField.getName() + ";" +
+                                       "}";
+                                //@formatter:on
+                            }
+                            Logger.debug(code);
+                            CtMethod method = CtMethod.make(code, ctClass);
+                            ctClass.addMethod(method);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -252,6 +264,21 @@ public class Neo4jModelEnhancer extends Enhancer {
 
         }
         return false;
+    }
+
+    /**
+     * Return the neo4jRelatedTo annotation of a field if exist, null otherwise.
+     * 
+     * @param ctField
+     * @return
+     */
+    private Neo4jRelatedTo getRelatedAnnotation(CtField ctField) {
+        for (Object annotation : ctField.getAvailableAnnotations()) {
+            if (annotation.toString().startsWith("@play.modules.neo4j.annotation.Neo4jRelatedTo(")) {
+                return (Neo4jRelatedTo) annotation;
+            }
+        }
+        return null;
     }
 
 }
