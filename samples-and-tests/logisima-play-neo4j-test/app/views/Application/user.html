@@ -1,0 +1,38 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+
+<h1>Welcome to logisima-play-neo4j test application</h1>
+
+<p>
+	This is the list of what you can test :
+</p>
+
+<ul>
+	<li><a href="@{Application.index()}">Home</a></li>
+	<li><a href="@{Application.add()}">Add a User</a></li>
+</ul>
+
+<table>
+    <th>
+        <td>Firstname</td>
+        <td>Lastname</td>
+        <td>email</td>
+        <td>action</td>
+    </th>
+
+    #{list items:users, as:'user'}
+        <tr>
+            <td><a href="@{Application.user(user.key)}" title="View profile">${user.firstname}</a></td>
+            <td><a href="@{Application.user(user.key)}" title="View profile">${user.lastname}</a></td>
+            <td><a href="@{Application.user(user.key)}" title="View profile">${user.email}</a></td>
+            <td>
+                <a href="@{Application.editUser(user.key)}" title="Edit">
+                    <img src="@{'/public//images/pencil.png'}" alt="Edit"/>
+                </a>
+                <a href="@{Application.deleteUser(user.key)}" title="Delete">
+                    <img src="@{'/public/images/cross.png'}" alt="Delete"/>
+                </a>
+            </td>
+        </tr>
+    #{/list}
+</table>

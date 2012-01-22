@@ -4,6 +4,7 @@
 
     <property name="debug" value="true"/>
     <property name="optimize" value="true"/>
+	<property name="deprecation" value="false"/>
     <property file="build.properties"/>
 
     <path id="project.classpath">
@@ -29,7 +30,7 @@
                 <include name="**/play.static"/>
             </fileset>
         </copy>
-        <jar destfile="../chantelamesse/lib/play-neo4j.jar" basedir="tmp/classes">
+        <jar destfile="./lib/play-neo4j.jar" basedir="tmp/classes">
             <manifest>
                 <section name="Play-module">
                     <attribute name="Specification-Title" value="neo4j"/>
@@ -41,7 +42,7 @@
 
     <target name="compile">
         <mkdir dir="tmp/classes"/>
-        <javac srcdir="src" destdir="tmp/classes" target="1.5" debug="true">
+        <javac srcdir="src" destdir="tmp/classes" target="1.5" debug="${debug}" optimize="${optimize}" deprecation="${deprecation}" includeantruntime="false">
             <classpath refid="project.classpath"/>
         </javac>
     </target>

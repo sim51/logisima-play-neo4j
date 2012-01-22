@@ -44,7 +44,7 @@ public class Neo4jRelationshipEnhancer extends Enhancer {
         String entityName = ctClass.getName();
 
         // Only enhance Neo4jRelationship classes.
-        if (!ctClass.subtypeOf(classPool.get("play.modules.neo4j.model.Neo4jRelationship"))) {
+        if (!ctClass.subtypeOf(classPool.get("play.modules.neo4j.relationship.Neo4jRelationship"))) {
             return;
         }
 
@@ -100,7 +100,7 @@ public class Neo4jRelationshipEnhancer extends Enhancer {
         // ~~~~~~~~~~
         // Adding getByKey() method
         //@formatter:off
-        String codeGetByKey = "public static play.modules.neo4j.model.Neo4jRelationship getByKey(Long key) {" + 
+        String codeGetByKey = "public static play.modules.neo4j.relationship.Neo4jRelationship getByKey(Long key) {" + 
                             "return (" + entityName + ") _getByKey(key, \"" + entityName + "\");" + 
                       "}";
         //@formatter:on

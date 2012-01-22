@@ -27,6 +27,9 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewConstructor;
 import javassist.NotFoundException;
+
+import org.neo4j.graphdb.Node;
+
 import play.Logger;
 import play.classloading.ApplicationClasses.ApplicationClass;
 import play.classloading.enhancers.Enhancer;
@@ -55,16 +58,27 @@ public class Neo4jModelEnhancer extends Enhancer {
         // Add a default constructor if needed
         try {
             boolean hasDefaultConstructor = false;
+            boolean hasNodeConstructor = false;
             for (CtConstructor constructor : ctClass.getDeclaredConstructors()) {
                 if (constructor.getParameterTypes().length == 0) {
                     hasDefaultConstructor = true;
-                    break;
+                }
+                if (constructor.getParameterTypes().length == 1
+                        && constructor.getParameterTypes()[0].getClass().isInstance(Node.class)) {
+                    hasNodeConstructor = true;
                 }
             }
             if (!hasDefaultConstructor && !ctClass.isInterface()) {
+                Logger.debug("Adding default constructor");
                 CtConstructor defaultConstructor = CtNewConstructor.make("public " + ctClass.getSimpleName()
                         + "() { super();}", ctClass);
                 ctClass.addConstructor(defaultConstructor);
+            }
+            if (!hasNodeConstructor && !ctClass.isInterface()) {
+                Logger.debug("Adding node constructor");
+                CtConstructor nodeConstructor = CtNewConstructor.make("public " + ctClass.getSimpleName()
+                        + "(org.neo4j.graphdb.Node node) { super(node);}", ctClass);
+                ctClass.addConstructor(nodeConstructor);
             }
         } catch (Exception e) {
             Logger.error(e, "Error in PropertiesEnhancer");
@@ -237,7 +251,7 @@ public class Neo4jModelEnhancer extends Enhancer {
             }
 
         }
-        return true;
+        return false;
     }
 
 }

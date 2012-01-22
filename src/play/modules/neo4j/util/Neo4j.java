@@ -71,7 +71,9 @@ public class Neo4j {
                 bootstrapperDb.remove();
             }
         }
-        graphDb.get().shutdown();
+        if (graphDb.get() != null) {
+            graphDb.get().shutdown();
+        }
         graphDb.remove();
     }
 

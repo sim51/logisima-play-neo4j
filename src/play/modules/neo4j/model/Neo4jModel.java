@@ -278,7 +278,8 @@ public abstract class Neo4jModel {
     protected static <T extends Neo4jModel> T _getByKey(Long key, String className) throws Neo4jException {
         Class clazz = Play.classes.getApplicationClass(className).javaClass;
         Neo4jFactory factory = getFactory(clazz);
-        return (T) factory.getByKey(key, Neo4jUtils.getIndexName(clazz.getSimpleName(), "key"));
+        Node node = factory.getByKey(key, Neo4jUtils.getIndexName(clazz.getSimpleName(), "key"));
+        return getByNode(node);
     }
 
     /**
@@ -288,7 +289,7 @@ public abstract class Neo4jModel {
      * @return
      * @throws Neo4jException
      */
-    public static Neo4jModel getByNode(Node node) throws Neo4jException {
+    public static <T extends Neo4jModel> T getByNode(Node node) throws Neo4jException {
         Class clazz = Neo4jUtils.getClassNameFromNode(node);
         Neo4jModel nodeWrapper = null;
         try {
@@ -299,7 +300,7 @@ public abstract class Neo4jModel {
         } catch (Exception e) {
             throw new Neo4jException(e);
         }
-        return nodeWrapper;
+        return (T) nodeWrapper;
     }
 
     /**

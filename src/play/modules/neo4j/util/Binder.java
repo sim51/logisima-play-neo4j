@@ -100,6 +100,7 @@ public class Binder {
      * @param params
      * @return
      */
+    @SuppressWarnings("unchecked")
     public Object bind(String name, Object o, Map<String, String[]> params) {
         try {
             Neo4jModel model = (Neo4jModel) o;
@@ -143,5 +144,4 @@ public class Binder {
             throw new Neo4jPlayException(e.getMessage());
         }
     }
-
 }

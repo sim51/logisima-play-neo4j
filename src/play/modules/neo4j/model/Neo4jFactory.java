@@ -100,7 +100,7 @@ public class Neo4jFactory {
             try {
                 Node node = graphDb.createNode();
                 node.setProperty(NODE_KEY_COUNTER, new Long(1));
-                node.setProperty(NODE_CLASS_NAME, clazz.getSimpleName());
+                node.setProperty(NODE_CLASS_NAME, clazz.getName());
                 graphDb.getReferenceNode().createRelationshipTo(node, this.root2ref);
                 tx.success();
             } finally {
