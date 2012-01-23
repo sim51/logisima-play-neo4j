@@ -14,4 +14,14 @@ public class Neo4jController extends Controller {
         redirect(url);
     }
 
+    public static void export() {
+        String url = "http://";
+        if (request.secure) {
+            url = "https://";
+        }
+        url += request.domain;
+        url += ":7474/webadmin/";
+        redirect(url);
+    }
+
 }

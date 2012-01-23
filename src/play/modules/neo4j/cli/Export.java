@@ -21,6 +21,7 @@ package play.modules.neo4j.cli;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +30,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 import play.Play;
-import play.Play.Mode;
+import play.db.DBPlugin;
+import play.db.jpa.JPAPlugin;
 import play.modules.neo4j.cli.export.YmlNode;
 import play.modules.neo4j.cli.export.YmlRelation;
 import play.modules.neo4j.util.Neo4j;
@@ -47,17 +49,6 @@ public class Export {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
-        // initiate play! framework
-        File root = new File(
-                "/home/bsimard/workspace_logisima/logisima-play-neo4j/samples-and-tests/logisima-play-neo4j-test/");
-        Play.init(root, System.getProperty("play.id", ""));
-        Play.mode = Mode.PROD;
-        Play.readConfiguration();
-        Play.initStaticStuff();
-        Play.loadModules();
-
-        // initiate DB
-        Neo4j.initialize();
 
         // we retrieve parameters
         String filename = "data";
@@ -72,11 +63,23 @@ public class Export {
                 }
             }
         }
-        mainWork(filename, output);
 
+        // initiate play! framework
+        File root = new File(System.getProperty("application.path"));
+        Play.init(root, System.getProperty("play.id", ""));
+        Thread.currentThread().setContextClassLoader(Play.classloader);
+        Class c = Play.classloader.loadClass("play.modules.neo4j.cli.Export");
+        Method m = c.getMethod("mainWork", String.class, String.class);
+        m.invoke(c.newInstance(), filename, output);
+        System.exit(0);
     }
 
     public static void mainWork(String filename, String output) throws Exception {
+        new DBPlugin().onApplicationStart();
+        new JPAPlugin().onApplicationStart();
+
+        // initiate DB
+        Neo4j.initialize();
         // for all node
         for (Node node : Neo4j.db().getAllNodes()) {
             if (node.hasRelationship(Direction.INCOMING) && !node.hasProperty("CLASSNAME")
@@ -91,6 +94,7 @@ public class Export {
             }
         }
         writeFile(filename, output);
+        System.out.println("End of mainWork");
     }
 
     /**

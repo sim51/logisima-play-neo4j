@@ -44,7 +44,7 @@ public class YmlRelation {
      */
     public String toYml() {
         System.out.println("Generate yml for relation " + id);
-        String yml = "\nRelation(" + this.id + "):\n";
+        String yml = "\nRelation(" + this.id + "):";
         yml += "\n Type: " + relationName;
         yml += "\n From: " + startNode.id;
         yml += "\n To: " + endNode.id;

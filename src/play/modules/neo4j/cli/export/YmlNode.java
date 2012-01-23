@@ -37,7 +37,7 @@ public class YmlNode {
         // getting the key value of the object
         if (dbNode.getProperty("key", null) != null) {
             System.out.println("Model class name " + model.getSimpleName());
-            id = model.getSimpleName() + "_" + (String) dbNode.getProperty("key");
+            id = model.getSimpleName() + "_" + dbNode.getProperty("key").toString();
         }
         else {
             id = "" + dbNode.getId();
@@ -53,7 +53,7 @@ public class YmlNode {
         String yml = "";
         if (id != null) {
             System.out.println("Generate yml for node " + id);
-            yml = "\n" + model.getSimpleName() + "(" + id + "):\n";
+            yml = "\n" + model.getSimpleName() + "(" + id + "):";
             // export all atributes, except key
             for (String property : dbNode.getPropertyKeys()) {
                 if (dbNode.getProperty(property, null) != null && !property.equals("key")) {
