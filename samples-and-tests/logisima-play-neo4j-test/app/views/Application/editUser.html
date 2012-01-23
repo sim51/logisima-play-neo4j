@@ -3,6 +3,10 @@
 
 <h1>User ${user?.login}</h1>
 
+#{menu/}
+
+<h2>Porfile ${user?.login}</h2>
+
 <form name="user" method="POST" action=@{Application.saveUser()}>
     
     <input type="hidden" name="user.key" value="${user?.key}" />

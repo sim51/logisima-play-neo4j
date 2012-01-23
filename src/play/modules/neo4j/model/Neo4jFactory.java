@@ -34,8 +34,11 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.helpers.collection.MapUtil;
 
 import play.Logger;
+import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.annotation.Neo4jRelatedTo;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
@@ -217,7 +220,7 @@ public class Neo4jFactory {
         String indexName = Neo4jUtils.getIndexName(nodeWrapper.getClass().getSimpleName(), field);
         if (indexName != null && field.get(nodeWrapper) != null) {
             // create the index
-            Index<Node> indexNode = Neo4j.db().index().forNodes(indexName);
+            Index<Node> indexNode = Neo4j.db().index().forNodes(indexName, getLuceneConfigParam(field));
             // here we have to remove the index when it's an update, so we take a look at the oldValues map
             if (oldValue != null) {
                 indexNode.remove(nodeWrapper.getNode(), field.getName(), oldValue.toString());
@@ -225,6 +228,26 @@ public class Neo4jFactory {
             indexNode.add(nodeWrapper.getNode(), field.getName(), field.get(nodeWrapper).toString());
         }
 
+    }
+
+    /**
+     * Construct lucene params configuration by the Neo4jIndex annotation.
+     * 
+     * @param field
+     * @return
+     */
+    private Map<String, String> getLuceneConfigParam(Field field) {
+        Neo4jIndex nodeIndex = field.getAnnotation(Neo4jIndex.class);
+        Map<String, String> params = new HashMap<String, String>();
+        params.put(IndexManager.PROVIDER, "lucene");
+        params.put("type", nodeIndex.type());
+        if (nodeIndex.type().equals("fulltext") && nodeIndex.lowerCase() != "") {
+            return MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", nodeIndex.type(), "to_lower_case",
+                    nodeIndex.lowerCase());
+        }
+        else {
+            return MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", nodeIndex.type());
+        }
     }
 
     /**

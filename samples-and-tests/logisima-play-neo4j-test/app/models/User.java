@@ -13,7 +13,7 @@ public class User extends Neo4jModel {
     public String     email;
     public String     firstname;
 
-    @Neo4jIndex("lastname")
+    @Neo4jIndex(value = "lastname", type = "fulltext")
     public String     lastname;
 
     @Neo4jRelatedTo("IS_FRIEND")

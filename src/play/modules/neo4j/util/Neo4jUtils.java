@@ -70,12 +70,14 @@ public class Neo4jUtils {
         return field.getAnnotation(Neo4jIndex.class) != null;
     }
 
-    public static String getIndexName(String className, String indexName) {
-        indexName = className + "_" + indexName;
-        indexName = indexName.toUpperCase();
-        return indexName;
-    }
-
+    /**
+     * Generate the name of an index based on the Neo4jIndex annotation if it is present on the field, else it concats
+     * <code>classname _field</code>.
+     * 
+     * @param className
+     * @param field
+     * @return
+     */
     public static String getIndexName(String className, java.lang.reflect.Field field) {
         String indexName = null;
         Neo4jIndex nodeIndex = field.getAnnotation(Neo4jIndex.class);
@@ -90,6 +92,19 @@ public class Neo4jUtils {
             }
         }
         return getIndexName(className, indexName);
+    }
+
+    /**
+     * Generate the fault inde name for a field of a class: <code>classname _field</code>.
+     * 
+     * @param className
+     * @param indexName
+     * @return
+     */
+    public static String getIndexName(String className, String indexName) {
+        indexName = className + "_" + indexName;
+        indexName = indexName.toUpperCase();
+        return indexName;
     }
 
 }

@@ -1,9 +1,16 @@
 package controllers;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import models.User;
+
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
+
 import play.modules.neo4j.exception.Neo4jException;
+import play.modules.neo4j.util.Neo4j;
 import play.mvc.Controller;
 
 public class Application extends Controller {
@@ -36,6 +43,18 @@ public class Application extends Controller {
         User user = User.getByKey(key);
         user.delete();
         index();
+    }
+
+    public static void searchUser(String query) {
+        List<User> users = new ArrayList<User>();
+        IndexManager index = Neo4j.db().index();
+        Index<Node> usersIndex = index.forNodes("lastname");
+        for (Node node : usersIndex.query("lastname", query)) {
+            User user = new User();
+            user.setNode(node);
+            users.add(user);
+        }
+        render(users);
     }
 
 }

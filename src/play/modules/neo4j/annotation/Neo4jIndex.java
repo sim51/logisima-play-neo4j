@@ -33,5 +33,20 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Neo4jIndex {
 
+    /**
+     * Name of the index.
+     */
     String value() default "";
+
+    /**
+     * exact is the default and uses a Lucene keyword analyzer. fulltext uses a white-space tokenizer in its analyzer.
+     */
+    String type() default "exact";
+
+    /**
+     * This parameter goes together with type: fulltext and converts values to lower case during both additions and
+     * querying, making the index case insensitive. Defaults to true.
+     */
+    String lowerCase() default "true";
+
 }
