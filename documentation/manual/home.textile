@@ -1,0 +1,183 @@
+<h1>LogiSima - Neo4j databas support</h1>
+<p>
+    This module allows you to use an embedded <a href="http://neo4j.org">Neo4j database</a> and managed your model with annotation (like JPA). This module is similar as <a href="http://www.springsource.org/spring-data/neo4j">Spring data neo4j</a>, it's the same philosophy.  
+</p>
+
+<h2>Installation</h2>
+<h3><a>Enabled Neo4j module</a></h3>
+<h4><a>For play $&lt; 1.2</a></h4>
+<p>
+    In the conf/application.conf file, enable LogiSima Neo4j module with this line :
+</p>
+<pre>
+    <code>
+    # The logisima play cas module
+    module.neo4j=${play.path}/modules/neo4j-0.1
+    </code>
+</pre>
+<h3><a>For play >= 1.2</a></h3>
+<p>
+    In the conf/dependencies.yml file, enable LogiSima Neo4j module depency by adding this line :
+</p>
+<pre>
+    <code>
+        require:    
+        &nbsp;&nbsp;- play -> neo4j 0.1
+    </code>
+</pre>
+
+<h3><a>Module configuration</a></h3>
+<p>
+    In the conf/application.conf file, you can specify the path of neo4j embedded database by adding this line (by default it's "db") :
+</p>
+<pre>
+    <code>
+        neo4j.path=dbProd
+    </code>
+</pre>
+
+<h2>How to use it</h2>
+
+<h3>Declare your model</h3>
+<p>
+    To create a Model you just have to create a class that extend <code> play.modules.neo4j.model.Neo4jModel</code>, that's all !<br/>
+    <u>Exemple :</u>
+</p>
+<pre>
+    <code>
+        public class User extends Neo4jModel {
+            public String     login;
+            public String     email;
+            public String     firstname;
+            public String     lastname;
+        }
+    </code>
+</pre>
+
+<p>
+    Models come with some basics methods :
+    <ul>
+        <li><code>getByKey(Long key)</code> : in neo4j there is no id field but a key one. It's the unique identifier of the object. This key is automaticly generate by the module. You can retrieve an Model simly by calling the <code>getByKey</code> method. Exemple : <code>User user = User.getByKey(3);</code></li>
+        <li><code>save()</code> : Save and index the object to the database</li>
+        <li><code>delete()</code> : Delete the object to the database</li>
+        <li><code>findAll()</code> : Retrieve all model object into the database. Becarefull there is no limitationwith this method. So if you have a million of object, this method return a million of object. Exemple : <code>List<User> user = User.findAll();</code> </li>
+    </ul>
+</p>
+
+<h3>Add a relation to your model</h3>
+<p>
+    To create a relation between a node and others, you have to :
+    <ul>
+        <li>Create a field of type <code>java.util.List</code></li>
+        <li>Annotate your filed this the <code>@Neo4jRelatedTo</code> annotation and specify the name of the relation</li>
+    </ul>
+    <u>Exemple :</u>
+</p>
+<pre>
+    <code>
+        public class User extends Neo4jModel {
+            public String     login;
+            public String     email;
+            public String     firstname;
+            public String     lastname;
+            
+            @Neo4jRelatedTo("IS_FRIEND")
+            public List<User> friends;
+        }
+    </code>
+</pre>
+
+<h3>Create an index</h3>
+<p>
+    You can create a neo4j index simply by adding an annotation on fields : <code>@Neo4jIndex</code><br/>
+    <u>Exemple :</u>
+</p>
+<pre>
+    <code>
+        public class User extends Neo4jModel {
+            public String     login;
+            public String     email;
+            
+            @Neo4jIndex("name")
+            public String     firstname;
+            
+            @Neo4jIndex("name")
+            public String     lastname;
+            
+            @Neo4jRelatedTo("IS_FRIEND")
+            public List<User> friends;
+        }
+    </code>
+</pre>
+<p>
+    This will create an index named <code>name</code>, and for each user when we save it, firstname and lastanme value will be index into <code>name</code> index.
+</p>
+<p>
+    Moreover, you can customize lucene configuration with the annotation :
+    <ul>
+        <li><strong>type</strong>: <strong>exact</strong> is the default value, it uses a Lucene keyword analyzer. <strong>fulltext</strong> type uses a white-space tokenizer in its analyzer</li>
+        <li><strong>lowerCase</strong>: This parameter goes together with type: fulltext and converts values to lower case during both additions and querying, making the index case insensitive. Defaults value is true.</li>
+    </ul>
+</p>
+
+<h3>Import / Export your database</h3>
+
+<h4>Export</h4>
+<p>
+    Neo4j module comes with a command line tool to export your database into an yml file. To do it, you just have to type this line into a console :
+</p>
+<pre>
+    <code>play neo4j:export</code>
+</pre>
+<p>By default, this will generate a file into your <code>conf</code> application folder with the name <code>data.yml</code>. Of course, you can change it. Type <code>play neo4j:help</code> to khnow how to do it.</p>
+
+<h4>Import</h4>
+<p>
+    You can import an yml file into your database. To do it, yo can choose between :
+    <ul>
+        <li>Commmand line, by calling <code>play neo4j:import</code></li>
+        <li>Java, by calling the <code>load(String filename)</code> method from <code>play.modules.neo4j.util.Fixtures</code> class. It will be usefull for unit test !</li>    
+    </ul>
+</p>
+
+<h4>Yml format</h4>
+<p>
+    The yml format for this module is very simple. There is two kind of "yml object" : model & relation.<br/>
+</p>
+<p>
+For model, the format is the same as play! standard. First line contains the model class and an identifier. Other lne are simply attribute name with their value.
+<br/><u>Exemple :</u>
+</p>
+<pre>
+    <code>
+        User(User_2):
+         login: ben
+         email: logisima@gmail.com
+         firstname: Benoît
+         lastname: SIMARD
+    </code>
+</pre>
+<p>
+For relation, there is a special format. All relation must begin with <code>Relation(id)</code> where id is a unique identifier of the relation.<br/>
+After, all relation must have three attributes :
+<ul>
+    <li><strong>Type</strong> Correspond to the name of the relation</li>
+    <li><strong>From</strong> is the identifier of the start node</li>
+    <li><strong>To</strong> is the identifier of the end node</li>
+</ul>
+<br/><u>Exemple :</u>
+</p>
+<pre>
+    <code>
+        Relation(15):
+         Type: IS_A_COLLEAGE
+         From: User_2
+         To: User_1
+    </code>
+</pre>
+
+<h3>See neo4j console</h3>
+
+<p>Neo4j get a console to browse the database and to get usefull informations. To see it, just type this url into your browser, and youo will see the console :</p>
+<code>http://localhost:9000/@neo4j/console</code>
+<p><strong>NB:</strong>Console is only avaible when play! is in DEV mode !</p>
