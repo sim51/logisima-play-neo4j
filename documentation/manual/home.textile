@@ -3,7 +3,7 @@
     This module allows you to use an embedded <a href="http://neo4j.org">Neo4j database</a> and managed your model with annotation (like JPA). This module is similar as <a href="http://www.springsource.org/spring-data/neo4j">Spring data neo4j</a>, it's the same philosophy.  
 </p>
 
-<h2>Installation</h2>
+<h2><a>Installation</a></h2>
 <h3><a>Enabled Neo4j module</a></h3>
 <h4><a>For play $&lt; 1.2</a></h4>
 <p>
@@ -36,7 +36,7 @@
     </code>
 </pre>
 
-<h2>How to use it</h2>
+<h2><a>How to use it</a></h2>
 
 <h3><a>Declare your model</a></h3>
 <p>
