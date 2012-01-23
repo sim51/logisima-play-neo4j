@@ -38,7 +38,7 @@
 
 <h2>How to use it</h2>
 
-<h3>Declare your model</h3>
+<h3><a>Declare your model</a></h3>
 <p>
     To create a Model you just have to create a class that extend <code> play.modules.neo4j.model.Neo4jModel</code>, that's all !<br/>
     <u>Exemple :</u>
@@ -64,7 +64,7 @@
     </ul>
 </p>
 
-<h3>Add a relation to your model</h3>
+<h3><a>Add a relation to your model</a></h3>
 <p>
     To create a relation between a node and others, you have to :
     <ul>
@@ -87,7 +87,7 @@
     </code>
 </pre>
 
-<h3>Create an index</h3>
+<h3><a>Create an index</a></h3>
 <p>
     You can create a neo4j index simply by adding an annotation on fields : <code>@Neo4jIndex</code><br/>
     <u>Exemple :</u>
@@ -120,9 +120,9 @@
     </ul>
 </p>
 
-<h3>Import / Export your database</h3>
+<h3><a>Import / Export your database</a></h3>
 
-<h4>Export</h4>
+<h4><a>Export</a></h4>
 <p>
     Neo4j module comes with a command line tool to export your database into an yml file. To do it, you just have to type this line into a console :
 </p>
@@ -131,7 +131,7 @@
 </pre>
 <p>By default, this will generate a file into your <code>conf</code> application folder with the name <code>data.yml</code>. Of course, you can change it. Type <code>play neo4j:help</code> to khnow how to do it.</p>
 
-<h4>Import</h4>
+<h4><a>Import</a></h4>
 <p>
     You can import an yml file into your database. To do it, yo can choose between :
     <ul>
@@ -140,7 +140,7 @@
     </ul>
 </p>
 
-<h4>Yml format</h4>
+<h4><a>Yml format</a></h4>
 <p>
     The yml format for this module is very simple. There is two kind of "yml object" : model & relation.<br/>
 </p>
@@ -176,7 +176,7 @@ After, all relation must have three attributes :
     </code>
 </pre>
 
-<h3>See neo4j console</h3>
+<h3><a>See neo4j console</a></h3>
 
 <p>Neo4j get a console to browse the database and to get usefull informations. To see it, just type this url into your browser, and youo will see the console :</p>
 <code>http://localhost:9000/@neo4j/console</code>
