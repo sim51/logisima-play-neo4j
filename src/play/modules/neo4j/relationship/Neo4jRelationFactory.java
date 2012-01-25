@@ -2,6 +2,7 @@ package play.modules.neo4j.relationship;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,14 +31,17 @@ public class Neo4jRelationFactory {
                 Class<?> clazz = (Class<?>) listType.getActualTypeArguments()[0];
 
                 // getting node constructor
-                Constructor constructor = clazz.getDeclaredConstructor(Node.class);
+                Constructor constructor = clazz.getDeclaredConstructor();
                 constructor.setAccessible(true);
+                // getting setter for node
+                Method setNode = clazz.getMethod("setNode", Node.class);
 
                 Traverser traverser = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
                         ReturnableEvaluator.ALL_BUT_START_NODE, DynamicRelationshipType.withName(relationName),
                         Direction.valueOf(direction));
                 for (Node item : traverser.getAllNodes()) {
-                    T nodeWrapper = (T) constructor.newInstance(item);
+                    T nodeWrapper = (T) constructor.newInstance();
+                    setNode.invoke(nodeWrapper, item);
                     list.add(nodeWrapper);
                 }
             }

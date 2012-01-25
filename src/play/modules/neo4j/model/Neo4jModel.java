@@ -19,6 +19,7 @@
 package play.modules.neo4j.model;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -267,10 +268,14 @@ public abstract class Neo4jModel {
         Class clazz = Neo4jUtils.getClassNameFromNode(node);
         Neo4jModel nodeWrapper = null;
         try {
+            // getting & calling default constructor
             Constructor c;
-            c = clazz.getDeclaredConstructor(Node.class);
+            c = clazz.getDeclaredConstructor();
             c.setAccessible(true);
-            nodeWrapper = (Neo4jModel) c.newInstance(node);
+            nodeWrapper = (Neo4jModel) c.newInstance();
+            // getting settter for node
+            Method setNode = clazz.getMethod("setNode", Node.class);
+            setNode.invoke(nodeWrapper, node);
         } catch (Exception e) {
             throw new Neo4jException(e);
         }

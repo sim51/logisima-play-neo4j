@@ -72,10 +72,6 @@ public class Neo4jModelEnhancer extends Enhancer {
                 CtConstructor defaultConstructor = CtNewConstructor.make("public " + ctClass.getSimpleName()
                         + "() { super();}", ctClass);
                 ctClass.addConstructor(defaultConstructor);
-                Logger.debug("Adding node constructor");
-                CtConstructor nodeConstructor = CtNewConstructor.make("public " + ctClass.getSimpleName()
-                        + "(org.neo4j.graphdb.Node node) { super(node);}", ctClass);
-                ctClass.addConstructor(nodeConstructor);
             }
         } catch (Exception e) {
             Logger.error(e, "Error in PropertiesEnhancer");
