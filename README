@@ -14,7 +14,5 @@ NB:
 Model class have to extend Neo4jModel class
 
 TODO:
-* export database to an YML format
-* Adding TU for binding
-* Test with other type than String
-* Adding documentation 
+* See Lazy
+* See delete a relation and save

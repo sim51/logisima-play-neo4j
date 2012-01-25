@@ -175,13 +175,29 @@ public class Neo4jFactory {
             // setting properties node and stock oldValue into an hashmap for indexes
             for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
                 if (!field.getName().equals("node") && !field.getName().equals("shouldBeSave")
-                        && field.get(nodeWrapper) != null && !field.isAnnotationPresent(Neo4jRelatedTo.class)) {
-                    Object oldValue = nodeWrapper.getNode().getProperty(field.getName(), null);
-                    if (oldValue != null) {
-                        oldValues.put(field.getName(), oldValue);
+                        && field.get(nodeWrapper) != null) {
+
+                    // it's a classic attribute
+                    if (!field.isAnnotationPresent(Neo4jRelatedTo.class)) {
+                        Object oldValue = nodeWrapper.getNode().getProperty(field.getName(), null);
+                        if (oldValue != null) {
+                            oldValues.put(field.getName(), oldValue);
+                        }
+                        nodeWrapper.getNode().setProperty(
+                                field.getName(),
+                                play.modules.neo4j.util.Binder.bindToNeo4jFormat(field.get(nodeWrapper),
+                                        field.getType()));
                     }
-                    nodeWrapper.getNode().setProperty(field.getName(),
-                            play.modules.neo4j.util.Binder.bindToNeo4jFormat(field.get(nodeWrapper), field.getType()));
+                    // it's a relation
+                    else {
+                        // TODO: adding relation OK, but for deleting ???
+                        Neo4jRelatedTo neo4jRelatedTo = field.getAnnotation(Neo4jRelatedTo.class);
+                        List<Neo4jModel> relations = (List) field.get(nodeWrapper);
+                        for (Neo4jModel related : relations) {
+                            nodeWrapper.getNode().createRelationshipTo(related.getNode(),
+                                    DynamicRelationshipType.withName(neo4jRelatedTo.value()));
+                        }
+                    }
                 }
             }
 

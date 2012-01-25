@@ -50,3 +50,30 @@
     </li>
     #{/if}
 </ul>
+
+<h3>Adding relation</h3>
+<form action="@{Application.userSerachUserRelation()}" method="POST">
+    <label for="query">Search a user :</label> 
+    <input type="text"  name="query" id="query" />
+    <input type="hidden" name="key" value=${user.key} />
+    <input type="submit" value="Search" />
+</form>
+
+<ul>
+    #{list items:users, as:'related'}
+        <li>
+            <form action="@{Application.userAddRelation()}" method="POST">
+                <input type="hidden" name="key" value=${user.key} />
+                <input type="hidden" name="related" value=${related.key} />
+                <a href="@Application.user(friend.key)">${related.firstname} ${related.lastname}</a>&nbsp;
+                <select name="type">
+                    <option value="1" selected="selected">Friend</option>
+                    <option value="2" selected="selected">Familly</option>
+                    <option value="3" selected="selected">Colleage</option>
+                    <option value="4" selected="selected">Clasmate</option>
+                </select>
+                <input type="submit" value="Related" />
+            </form>
+        </li>
+    #{/list}
+</ul>

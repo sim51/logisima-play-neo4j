@@ -63,8 +63,50 @@ public class Application extends Controller {
 
     public static void userAvatar(Long key) throws Neo4jException {
         User user = User.getByKey(key);
-        response.setContentTypeIfNotSet(user.avatar.type());
-        renderBinary(user.avatar.getFile());
+        if (user.avatar != null) {
+            response.setContentTypeIfNotSet(user.avatar.type());
+            renderBinary(user.avatar.getFile());
+        }
+        else {
+            notFound();
+        }
     }
 
+    public static void userSerachUserRelation(Long key, String query) throws Neo4jException {
+        User user = User.getByKey(key);
+        List<User> users = new ArrayList<User>();
+        IndexManager index = Neo4j.db().index();
+        Index<Node> usersIndex = index.forNodes("lastname");
+        for (Node node : usersIndex.query("lastname", query)) {
+            User usr = new User();
+            usr.setNode(node);
+            users.add(usr);
+        }
+        render("Application/user.html", user, users);
+    }
+
+    public static void userAddRelation(Long key, Long related, int type) throws Neo4jException {
+        User user = User.getByKey(key);
+        User relatedUser = User.getByKey(related);
+        switch (type) {
+            case 1:
+                // friend
+                user.friends.add(relatedUser);
+                break;
+            case 2:
+                // familly
+                user.famillies.add(relatedUser);
+                break;
+            case 3:
+                // colleages
+                user.colleages.add(relatedUser);
+                break;
+            case 4:
+                // classmate
+                user.classmates.add(relatedUser);
+                break;
+        }
+        user.save();
+        user(key);
+    }
 }

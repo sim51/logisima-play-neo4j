@@ -14,10 +14,9 @@ public class User extends Neo4jModel {
 
     public String     email;
 
-    @Neo4jIndex(value = "name", type = "fulltext")
     public String     firstname;
 
-    @Neo4jIndex(value = "name", type = "fulltext")
+    @Neo4jIndex(value = "lastname", type = "fulltext")
     public String     lastname;
 
     public Integer    age;
@@ -36,7 +35,7 @@ public class User extends Neo4jModel {
     @Neo4jRelatedTo("IS_FAMILLY")
     public List<User> famillies;
 
-    @Neo4jRelatedTo(value = "IS_A_COLLEAGE", lazy = true)
+    @Neo4jRelatedTo(value = "IS_A_COLLEAGE")
     public List<User> colleages;
 
     @Neo4jRelatedTo("IS_A_CLASSMATE")
