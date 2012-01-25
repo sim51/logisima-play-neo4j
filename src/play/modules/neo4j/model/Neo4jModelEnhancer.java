@@ -105,7 +105,6 @@ public class Neo4jModelEnhancer extends Enhancer {
                         //@formatter:off
                         String code = "public " + ctField.getType().getName() + " " + getter + "() {" +
                                             "if(this.shouldBeSave == Boolean.FALSE && this.node != null){" +
-                                                "System.out.println(\"@@@@ \" + ((" + ctField.getType().getName() + ") play.modules.neo4j.util.Binder.bindFromNeo4jFormat(this.node.getProperty(\""+ ctField.getName() + "\", null)," + ctField.getType().getName() +".class )));" +
                                                 "return ((" + ctField.getType().getName() + ") play.modules.neo4j.util.Binder.bindFromNeo4jFormat(this.node.getProperty(\""+ ctField.getName() + "\", null)," + ctField.getType().getName() +".class ));" +
                                             "}else{" +
                                                 "return " + ctField.getName() + ";" +

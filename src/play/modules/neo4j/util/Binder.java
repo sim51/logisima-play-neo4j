@@ -19,7 +19,7 @@
 package play.modules.neo4j.util;
 
 import java.io.File;
-import java.io.InputStream;
+import java.io.FileInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -132,10 +132,12 @@ public class Binder {
                     if (this.properties.containsKey(paramName)) {
                         Method setter = this.properties.get(paramName);
                         if (setter != null) {
-                            Logger.debug("Invoke setter " + paramName + "for bind object " + name);
+                            Logger.debug("Invoke setter " + paramName + " for bind object " + name);
                             Object value = play.data.binding.Binder.directBind(params.get(param)[0],
                                     setter.getParameterTypes()[0]);
-                            setter.invoke(model, value);
+                            if (value != null && !value.equals(play.data.binding.Binder.MISSING)) {
+                                setter.invoke(model, value);
+                            }
                         }
                         else {
                             throw new Neo4jPlayException("Setter for " + paramName + " can't be found into Neo4jModel "
@@ -193,7 +195,7 @@ public class Binder {
     public static Object bindFromNeo4jFormat(Object value, Class type) {
         try {
             if (value != null) {
-                if (type.isAssignableFrom(String.class)) {
+                if (type.isAssignableFrom(Date.class)) {
                     String temp = (String) value;
                     if (temp.startsWith("@@Date@@")) {
                         String dateString = temp.replaceFirst("@@Date@@", "");
@@ -206,26 +208,25 @@ public class Binder {
                             }
                         }
                     }
-                    else if (temp.startsWith("@@File@@")) {
+                }
+                if (type.isAssignableFrom(Blob.class)) {
+                    String temp = (String) value;
+                    if (temp.startsWith("@@File@@")) {
                         String fileString = temp.replaceFirst("@@File@@", "");
-                        String UUID = fileString.split("|")[0];
-                        String format = fileString.split("|")[1];
+                        String UUID = fileString.split("[|]")[0];
+                        String format = fileString.split("[|]")[1];
                         if (UUID != null && !UUID.isEmpty() && format != null && !format.isEmpty()) {
                             Blob blob = new Blob();
                             File file = new File(Blob.getStore(), UUID);
-                            InputStream is = Binder.class.getResourceAsStream(file.getAbsoluteFile().toString());
+                            FileInputStream is = new FileInputStream(file);
                             blob.set(is, format);
                             Logger.debug("Object from neo4j is " + blob.toString());
                             return blob;
                         }
                     }
-                    else {
-                        Logger.debug("Object from neo4j is " + value.toString());
-                        return type.cast(value);
-                    }
                 }
             }
-            Logger.debug("Object from neo4j is " + value.toString());
+            Logger.debug("Object from neo4j is default");
             return type.cast(value);
         } catch (Exception e) {
             throw new Neo4jPlayException(e);
