@@ -70,17 +70,6 @@ public abstract class Neo4jModel {
     }
 
     /**
-     * Constructor for existing node.
-     * 
-     * @param node
-     */
-    public Neo4jModel(Node node) {
-        this.shouldBeSave = Boolean.FALSE;
-        this.node = node;
-        initializeRelations();
-    }
-
-    /**
      * Initialize relation for model.
      */
     private void initializeRelations() {
@@ -276,6 +265,7 @@ public abstract class Neo4jModel {
             // getting settter for node
             Method setNode = clazz.getMethod("setNode", Node.class);
             setNode.invoke(nodeWrapper, node);
+            nodeWrapper.initializeRelations();
         } catch (Exception e) {
             throw new Neo4jException(e);
         }
