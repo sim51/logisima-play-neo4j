@@ -1,6 +1,7 @@
 package controllers;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import models.User;
@@ -9,6 +10,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
 
+import play.db.jpa.Blob;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.util.Neo4j;
 import play.mvc.Controller;
@@ -22,6 +24,8 @@ public class Application extends Controller {
 
     public static void user(Long key) throws Neo4jException {
         User user = User.getByKey(key);
+        Date date = user.birthday;
+        Blob blob = user.avatar;
         render(user);
     }
 
@@ -55,6 +59,12 @@ public class Application extends Controller {
             users.add(user);
         }
         render(users);
+    }
+
+    public static void userAvatar(Long key) throws Neo4jException {
+        User user = User.getByKey(key);
+        response.setContentTypeIfNotSet(user.avatar.type());
+        renderBinary(user.avatar.getFile());
     }
 
 }

@@ -7,7 +7,7 @@
 
 <h2>Porfile ${user?.login}</h2>
 
-<form name="user" method="POST" action=@{Application.saveUser()}>
+<form name="user" method="POST" action="@{Application.saveUser()}" enctype="multipart/form-data">
     
     <input type="hidden" name="user.key" value="${user?.key}" />
     
@@ -25,6 +25,26 @@
     
     <label for="email">Email</label>
     <input type="text" name="user.email" id="email" value="${user?.email}"/>
+    <br/>
+    
+    <label for="age">Age</label>
+    <input type="text" name="user.age" id="age" value="${user?.age}"/>
+    <br/>
+    
+    <label for="birthday">Birthday</label>
+    <input type="text" name="user.birthday" id="birthday" value="${user?.birthday?.format('dd/MM/yyyy')}"/>
+    <br/>
+    
+    <label for="isActive">Is active</label>
+    <input type="checkbox" name="user.isActive" id="isActive" value="${user?.isActive}"/>
+    <br/>
+    
+    <label for="devScore">Dev score</label>
+    <input type="text" name="user.devScore" id="devScore" value="${user?.devScore}"/>
+    <br/>
+    
+    <label for="avatar">Avatar</label>
+    <input type="file" name="user.avatar" id="avatar" value="${user?.avatar}"/>
     <br/>
     
     <input type="submit" value="Submit"/>

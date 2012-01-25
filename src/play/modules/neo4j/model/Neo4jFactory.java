@@ -180,7 +180,8 @@ public class Neo4jFactory {
                     if (oldValue != null) {
                         oldValues.put(field.getName(), oldValue);
                     }
-                    nodeWrapper.getNode().setProperty(field.getName(), field.get(nodeWrapper));
+                    nodeWrapper.getNode().setProperty(field.getName(),
+                            play.modules.neo4j.util.Binder.bindToNeo4jFormat(field.get(nodeWrapper), field.getType()));
                 }
             }
 

@@ -74,6 +74,7 @@ public abstract class Neo4jModel {
      * @param node
      */
     public Neo4jModel(Node node) {
+        this.shouldBeSave = Boolean.FALSE;
         this.node = node;
         initializeRelations();
     }

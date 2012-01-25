@@ -104,13 +104,13 @@ public class Neo4jModelEnhancer extends Enhancer {
                             throw new NotFoundException("it's not a true getter !");
                         }
                     } catch (NotFoundException noGetter) {
-
                         // create getter
                         Logger.debug("Adding getter " + getter + " for class " + entityName);
                         //@formatter:off
                         String code = "public " + ctField.getType().getName() + " " + getter + "() {" +
                                             "if(this.shouldBeSave == Boolean.FALSE && this.node != null){" +
-                                                "return ((" + ctField.getType().getName() + ") this.node.getProperty(\""+ ctField.getName() + "\", null));" +
+                                                "System.out.println(\"@@@@ \" + ((" + ctField.getType().getName() + ") play.modules.neo4j.util.Binder.bindFromNeo4jFormat(this.node.getProperty(\""+ ctField.getName() + "\", null)," + ctField.getType().getName() +".class )));" +
+                                                "return ((" + ctField.getType().getName() + ") play.modules.neo4j.util.Binder.bindFromNeo4jFormat(this.node.getProperty(\""+ ctField.getName() + "\", null)," + ctField.getType().getName() +".class ));" +
                                             "}else{" +
                                                 "return " + ctField.getName() + ";" +
                                             "}" +

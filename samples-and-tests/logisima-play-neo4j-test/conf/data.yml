@@ -26,21 +26,21 @@ User(User_4):
  lastname: Sécher
 
 Relation(17):
- Type: IS_FRIEND
- From: User_2
- To: User_4
+ type: IS_FRIEND
+ from: User_2
+ to: User_4
 
 Relation(15):
- Type: IS_A_COLLEAGE
- From: User_2
- To: User_1
+ type: IS_A_COLLEAGE
+ from: User_2
+ to: User_1
 
 Relation(16):
- Type: IS_FAMILLY
- From: User_2
- To: User_3
+ type: IS_FAMILLY
+ from: User_2
+ to: User_3
 
 Relation(14):
- Type: IS_A_CLASSMATE
- From: User_2
- To: User_4
+ type: IS_A_CLASSMATE
+ from: User_2
+ to: User_4

@@ -18,14 +18,18 @@
  */
 package play.modules.neo4j.util;
 
+import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import play.Logger;
 import play.classloading.enhancers.PropertiesEnhancer.PlayPropertyAccessor;
+import play.db.jpa.Blob;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 
@@ -129,7 +133,9 @@ public class Binder {
                         Method setter = this.properties.get(paramName);
                         if (setter != null) {
                             Logger.debug("Invoke setter " + paramName + "for bind object " + name);
-                            setter.invoke(model, params.get(param));
+                            Object value = play.data.binding.Binder.directBind(params.get(param)[0],
+                                    setter.getParameterTypes()[0]);
+                            setter.invoke(model, value);
                         }
                         else {
                             throw new Neo4jPlayException("Setter for " + paramName + " can't be found into Neo4jModel "
@@ -147,4 +153,83 @@ public class Binder {
             throw new Neo4jPlayException(e.getMessage());
         }
     }
+
+    /**
+     * For some play! type, we have to cast them into neo4j format, because neo4j database only support a few kind of
+     * type . @see http://docs.neo4j.org/chunked/snapshot/graphdb-neo4j-properties.html.
+     * 
+     * @param value
+     * @param type
+     * @return
+     */
+    public static Object bindToNeo4jFormat(Object value, Class type) {
+        try {
+            if (type.isAssignableFrom(Date.class)) {
+                Date date = (Date) value;
+                String neo4jValue = "@@Date@@" + date.getTime();
+                return neo4jValue;
+            }
+            else if (type.isAssignableFrom(Blob.class)) {
+                Blob blob = (Blob) value;
+                String format = blob.type();
+                String uuid = blob.getFile().getName();
+                return "@@File@@" + uuid + "|" + format;
+            }
+            else {
+                return value;
+            }
+        } catch (Exception e) {
+            throw new Neo4jPlayException(e);
+        }
+    }
+
+    /**
+     * Bijection method of <code>bindToNeo4jFormat</code>.
+     * 
+     * @param value
+     * @param type
+     * @return
+     */
+    public static Object bindFromNeo4jFormat(Object value, Class type) {
+        try {
+            if (value != null) {
+                if (type.isAssignableFrom(String.class)) {
+                    String temp = (String) value;
+                    if (temp.startsWith("@@Date@@")) {
+                        String dateString = temp.replaceFirst("@@Date@@", "");
+                        if (dateString != null) {
+                            Long dateLong = Long.valueOf(dateString);
+                            if (dateLong != null) {
+                                Date date = new Date(dateLong);
+                                Logger.debug("Object from neo4j is " + date.toString());
+                                return date;
+                            }
+                        }
+                    }
+                    else if (temp.startsWith("@@File@@")) {
+                        String fileString = temp.replaceFirst("@@File@@", "");
+                        String UUID = fileString.split("|")[0];
+                        String format = fileString.split("|")[1];
+                        if (UUID != null && !UUID.isEmpty() && format != null && !format.isEmpty()) {
+                            Blob blob = new Blob();
+                            File file = new File(Blob.getStore(), UUID);
+                            InputStream is = Binder.class.getResourceAsStream(file.getAbsoluteFile().toString());
+                            blob.set(is, format);
+                            Logger.debug("Object from neo4j is " + blob.toString());
+                            return blob;
+                        }
+                    }
+                    else {
+                        Logger.debug("Object from neo4j is " + value.toString());
+                        return type.cast(value);
+                    }
+                }
+            }
+            Logger.debug("Object from neo4j is " + value.toString());
+            return type.cast(value);
+        } catch (Exception e) {
+            throw new Neo4jPlayException(e);
+        }
+    }
+
 }
