@@ -38,7 +38,7 @@ public class User extends Neo4jModel {
     @Neo4jRelatedTo(value = "IS_A_COLLEAGE")
     public List<User> colleages;
 
-    @Neo4jRelatedTo("IS_A_CLASSMATE")
+    @Neo4jRelatedTo(value = "IS_A_CLASSMATE", lazy = true)
     public List<User> classmates;
 
 }

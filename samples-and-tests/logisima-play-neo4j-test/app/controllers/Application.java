@@ -103,6 +103,7 @@ public class Application extends Controller {
                 break;
             case 4:
                 // classmate
+                List<User> classmates = user.classmates;
                 user.classmates.add(relatedUser);
                 break;
         }

@@ -93,14 +93,6 @@ public abstract class Neo4jModel {
                         }
                     }
                 }
-                else {
-                    // create an empty list
-                    try {
-                        field.set(this, new ArrayList());
-                    } catch (IllegalAccessException e) {
-                        Logger.error(e.getMessage());
-                    }
-                }
             }
         }
     }
