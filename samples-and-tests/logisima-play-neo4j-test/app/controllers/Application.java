@@ -53,7 +53,7 @@ public class Application extends Controller {
         List<User> users = new ArrayList<User>();
         IndexManager index = Neo4j.db().index();
         Index<Node> usersIndex = index.forNodes("lastname");
-        for (Node node : usersIndex.query("lastname", query)) {
+        for (Node node : usersIndex.query("lastname:*" + query + "* OR firstname:*" + query + "*")) {
             User user = new User();
             user.setNode(node);
             users.add(user);

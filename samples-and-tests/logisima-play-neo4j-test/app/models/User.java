@@ -14,6 +14,7 @@ public class User extends Neo4jModel {
 
     public String     email;
 
+    @Neo4jIndex(value = "lastname", type = "fulltext")
     public String     firstname;
 
     @Neo4jIndex(value = "lastname", type = "fulltext")
