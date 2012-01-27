@@ -109,4 +109,44 @@ public class Application extends Controller {
         user.save();
         user(key);
     }
+
+    public static void userDeleteRelation(Long key, Long related, int type) throws Neo4jException {
+        User user = User.getByKey(key);
+        switch (type) {
+            case 1:
+                // friend
+                for (int i = 0; i < user.friends.size(); i++) {
+                    if (user.friends.get(i).getKey() == related) {
+                        user.friends.remove(i);
+                    }
+                }
+                break;
+            case 2:
+                // familly
+                for (int i = 0; i < user.famillies.size(); i++) {
+                    if (user.famillies.get(i).getKey() == related) {
+                        user.famillies.remove(i);
+                    }
+                }
+                break;
+            case 3:
+                // colleages
+                for (int i = 0; i < user.colleages.size(); i++) {
+                    if (user.colleages.get(i).getKey() == related) {
+                        user.colleages.remove(i);
+                    }
+                }
+                break;
+            case 4:
+                // classmate
+                for (int i = 0; i < user.classmates.size(); i++) {
+                    if (user.classmates.get(i).getKey() == related) {
+                        user.classmates.remove(i);
+                    }
+                }
+                break;
+        }
+        user.save();
+        user(key);
+    }
 }

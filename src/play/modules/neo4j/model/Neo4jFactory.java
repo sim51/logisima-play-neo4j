@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicRelationshipType;
@@ -190,12 +191,58 @@ public class Neo4jFactory {
                     }
                     // it's a relation
                     else {
-                        // TODO: adding relation OK, but for deleting ???
+
+                        // we retrive annotation value
                         Neo4jRelatedTo neo4jRelatedTo = field.getAnnotation(Neo4jRelatedTo.class);
+                        Direction relationDirection = Direction.valueOf(neo4jRelatedTo.direction());
+                        RelationshipType relationType = DynamicRelationshipType.withName(neo4jRelatedTo.value());
+
+                        // construct an hasmap of database relation from node with begin node / relation format.
+                        Map<String, Relationship> dbMapRelations = new HashMap<String, Relationship>();
+                        Iterable<Relationship> dbNodeRlation = nodeWrapper.getNode().getRelationships(
+                                relationDirection, relationType);
+                        for (Relationship relation : dbNodeRlation) {
+                            dbMapRelations.put(relation.getStartNode().getId() + "@" + relation.getEndNode().getId(),
+                                    relation);
+                        }
+                        // this map is the stack where relation are store and remove to khnow wich are to add or deleted
+                        // !
+                        Map<String, Relationship> dbMapRelationsStack = new TreeMap(dbMapRelations);
+
+                        // for all node in this node relation, we look if it is in the map
                         List<Neo4jModel> relations = (List) field.get(nodeWrapper);
                         for (Neo4jModel related : relations) {
-                            nodeWrapper.getNode().createRelationshipTo(related.getNode(),
-                                    DynamicRelationshipType.withName(neo4jRelatedTo.value()));
+                            // looking for start node (that's why Neo4jRelatedTo can't have "BOTH" value for direction).
+                            Node startNode;
+                            Node endNode;
+                            if (relationDirection.equals(Direction.INCOMING)) {
+                                startNode = related.node;
+                                endNode = nodeWrapper.getNode();
+                            }
+                            else {
+                                startNode = nodeWrapper.getNode();
+                                endNode = related.node;
+                            }
+
+                            // if dbMap has startNode, then it's OK, nothing to do
+                            if (dbMapRelationsStack.containsKey(startNode.getId() + "@" + endNode.getId())) {
+                                dbMapRelationsStack.remove(startNode.getId() + "@" + endNode.getId());
+                            }
+                            // startNode is not in dbMap so we add it !
+                            else {
+                                // Here we do a test if this relation is already in database (this due to the list where
+                                // we can add the same object more than one times ...)
+                                if (!dbMapRelations.containsKey(startNode.getId() + "@" + endNode.getId())) {
+                                    startNode.createRelationshipTo(endNode, relationType);
+                                }
+                            }
+                        }
+
+                        // if dbMap still contain data, we have to deleted some relations !
+                        if (dbMapRelationsStack.size() != 0) {
+                            for (Relationship relation : dbMapRelationsStack.values()) {
+                                relation.delete();
+                            }
                         }
                     }
                 }

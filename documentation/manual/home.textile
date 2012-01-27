@@ -87,6 +87,14 @@
     </code>
 </pre>
 
+<p>
+With Neo4jRelatedTo annotation, you can also defined some attributes :
+<ul>
+    <li><strong>lazy :</strong> like hibernate, you can do lazy loading for relation. By default, it's value is "false".</li>
+    <li><strong>direction :</strong>to specified the direction of the relation. By default, it's "OUTGOING", but you can change it to "INCOMING". Direction "BOTH is not implemented !!!</li>
+</ul>
+</p> 
+
 <h3><a>Create an index</a></h3>
 <p>
     You can create a neo4j index simply by adding an annotation on fields : <code>@Neo4jIndex</code><br/>

@@ -22,6 +22,7 @@ public class Neo4jRelationFactory {
 
     public static <T extends Neo4jModel> List<T> getModelsFromRelatedTo(String relationName, String direction,
             Field field, Node node) {
+
         // construction of the return type
         List<T> list = new ArrayList();
         try {
