@@ -133,8 +133,14 @@ public class Binder {
                         Method setter = this.properties.get(paramName);
                         if (setter != null) {
                             Logger.debug("Invoke setter " + paramName + " for bind object " + name);
-                            Object value = play.data.binding.Binder.directBind(params.get(param)[0],
-                                    setter.getParameterTypes()[0]);
+                            // first : neo4j binding type
+                            Object value = this
+                                    .bindFromNeo4jFormat(params.get(param)[0], setter.getParameterTypes()[0]);
+                            // second : if neo4j binding do nothing, we try play binding
+                            if (String.class.isInstance(value)) {
+                                value = play.data.binding.Binder.directBind(params.get(param)[0],
+                                        setter.getParameterTypes()[0]);
+                            }
                             if (value != null && !value.equals(play.data.binding.Binder.MISSING)) {
                                 setter.invoke(model, value);
                             }
@@ -227,7 +233,7 @@ public class Binder {
                 }
             }
             Logger.debug("Object from neo4j is default");
-            return type.cast(value);
+            return value;
         } catch (Exception e) {
             throw new Neo4jPlayException(e);
         }

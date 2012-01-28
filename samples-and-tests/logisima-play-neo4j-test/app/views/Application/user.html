@@ -25,7 +25,7 @@
                     <input type="hidden" name="type" value="1" />
                     <input type="hidden" name="key" value="${user.key}" />
                     <input type="hidden" name="related" value="${friend.key}" />
-                    <a href="@Application.user(friend.key)">${friend.firstname} ${friend.lastname}</a>&nbsp;
+                    <a href="@{Application.user(friend.key)}">${friend.firstname} ${friend.lastname}</a>&nbsp;
                     <input type="image" src="@{'/public/images/cross.png'}" />
                  </form>
             #{/list}
@@ -39,7 +39,7 @@
                 <input type="hidden" name="type" value="2" />
                 <input type="hidden" name="key" value="${user.key}" />
                 <input type="hidden" name="related" value="${familly.key}" />
-                <a href="@Application.user(familly.key)">${familly.firstname} ${familly.lastname}</a>&nbsp;
+                <a href="@{Application.user(familly.key)}">${familly.firstname} ${familly.lastname}</a>&nbsp;
                 <input type="image" src="@{'/public/images/cross.png'}" />
             </form>
         #{/list}
@@ -53,7 +53,7 @@
                 <input type="hidden" name="type" value="3" />
                 <input type="hidden" name="key" value="${user.key}" />
                 <input type="hidden" name="related" value="${colleage.key}" />
-                <a href="@Application.user(colleage.key)">${colleage.firstname} ${colleage.lastname}</a>&nbsp;
+                <a href="@{Application.user(colleage.key)}">${colleage.firstname} ${colleage.lastname}</a>&nbsp;
                 <input type="image" src="@{'/public/images/cross.png'}" />
              </form>
         #{/list}
@@ -67,7 +67,7 @@
                 <input type="hidden" name="type" value="4" />
                 <input type="hidden" name="key" value="${user.key}" />
                 <input type="hidden" name="related" value="${classmate.key}" />
-                <a href="@Application.user(classmate.key)">${classmate.firstname} ${classmate.lastname}</a>&nbsp;
+                <a href="@{Application.user(classmate.key)}">${classmate.firstname} ${classmate.lastname}</a>&nbsp;
                 <input type="image" src="@{'/public/images/cross.png'}" />
              </form>
         #{/list}
@@ -89,7 +89,7 @@
             <form action="@{Application.userAddRelation()}" method="POST">
                 <input type="hidden" name="key" value=${user.key} />
                 <input type="hidden" name="related" value=${related.key} />
-                <a href="@Application.user(friend.key)">${related.firstname} ${related.lastname}</a>&nbsp;
+                <a href="@{Application.user(friend.key)}">${related.firstname} ${related.lastname}</a>&nbsp;
                 <select name="type">
                     <option value="1" selected="selected">Friend</option>
                     <option value="2" selected="selected">Familly</option>

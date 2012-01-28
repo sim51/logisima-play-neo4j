@@ -2,45 +2,60 @@
 # This module is a part of LogiSima (http://www.logisima.com).
 
 User(User_3):
- login: tonio
- email: tonio@gmail.com
- firstname: Antoine
- lastname: SIMARD
+ login: 'jeff'
+ email: 'jeff@gmail.com'
+ firstname: 'Jean-François'
+ lastname: 'BOSSARD'
+ age: '42'
+ devScore: '1'
+ birthday: '@@Date@@-3600000'
 
 User(User_2):
- login: ben
- email: ben@gmail.com
- firstname: Benoît
- lastname: SIMARD
+ login: 'ben'
+ email: 'ben@gmail.com'
+ firstname: 'Benoît'
+ lastname: 'SIMARD'
+ age: '28'
+ devScore: '7851'
+ birthday: '@@Date@@417481200000'
+ avatar: '@@File@@5aae1a8e-84d1-4639-b4d9-e65b100c28a8|image/gif'
 
 User(User_1):
- login: jeff
- email: jeff@gmail.com
- firstname: Jean-François
- lastname: BOSSARD
+ login: 'tonio'
+ email: 'tonio@gmail.com'
+ firstname: 'Antoine'
+ lastname: 'SIMARD'
+ age: '31'
+ devScore: '0'
+ birthday: '@@Date@@319503600000'
+ avatar: '@@File@@547deb9b-d3c2-4882-b5f6-9e94f72bcc3a|image/jpeg'
 
 User(User_4):
- login: osecher
- email: osecher@gmail.com
- firstname: Olivier
- lastname: Sécher
+ login: 'osecher'
+ email: 'osecher@gmail.com'
+ firstname: 'Olivier'
+ lastname: 'Sécher'
+ age: '29'
+ devScore: '2531'
+ birthday: '@@Date@@390002400000'
+ avatar: '@@File@@273eb3d6-1d35-4201-842b-9e4af74b7ecf|image/png'
 
-Relation(17):
+Relation(49):
+ type: IS_A_CLASSMATE
+ from: User_2
+ to: User_4
+
+Relation(45):
+ type: IS_A_COLLEAGE
+ from: User_2
+ to: User_3
+
+Relation(44):
  type: IS_FRIEND
  from: User_2
  to: User_4
 
-Relation(15):
- type: IS_A_COLLEAGE
- from: User_2
- to: User_1
-
-Relation(16):
+Relation(46):
  type: IS_FAMILLY
  from: User_2
- to: User_3
-
-Relation(14):
- type: IS_A_CLASSMATE
- from: User_2
- to: User_4
+ to: User_1

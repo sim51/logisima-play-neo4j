@@ -57,7 +57,7 @@ public class YmlNode {
             // export all atributes, except key
             for (String property : dbNode.getPropertyKeys()) {
                 if (dbNode.getProperty(property, null) != null && !property.equals("key")) {
-                    yml += "\n " + property + ": " + dbNode.getProperty(property);
+                    yml += "\n " + property + ": '" + dbNode.getProperty(property) + "'";
                 }
             }
             yml += "\n";
