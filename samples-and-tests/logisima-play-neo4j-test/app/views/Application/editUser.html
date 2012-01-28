@@ -36,7 +36,7 @@
     <br/>
     
     <label for="isActive">Is active</label>
-    <input type="checkbox" name="user.isActive" id="isActive" value="${user?.isActive}"/>
+    <input type="checkbox" name="user.isActive" id="isActive" value="1" #{if user?.isActive}checked#{/if}/>
     <br/>
     
     <label for="devScore">Dev score</label>

@@ -13,7 +13,7 @@
     <li><strong>Email : </strong> ${user.email}</li>
     <li><strong>Age : </strong> ${user.age}</li>
     <li><strong>Birthdate: </strong> ${user.birthday?.format('dd/MM/yyyy')}</li>
-    <li><strong>Is active : </strong> ${user.isActive}</li>
+    <li><strong>Is active : </strong> #{if user.isActive} TRUE#{/if}#{else}FALSE#{/else}</li>
     <li><strong>Dev. score : </strong> ${user.devScore}</li>
     <li><strong>Avatar : </strong> <img src="@{application.userAvatar(user.key)}" /></li>
     
