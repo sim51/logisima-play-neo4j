@@ -134,12 +134,14 @@ public class Neo4jModelEnhancer extends Enhancer {
                         // create setter
                         Logger.debug("Adding setter " + getter + " for class " + entityName);
                         //@formatter:off
-                        CtMethod setMethod = CtMethod
-                                .make("public void " + setter + "(" + ctField.getType().getName() + " value) { " +
+                        String code = "public void " + setter + "(" + ctField.getType().getName() + " value) { " +
                                             "this." + ctField.getName() + " = value;" +
                                             "this.shouldBeSave = Boolean.TRUE;" +
-                                      "}", ctClass);
-                        //formatter:on
+                                      "}";
+                          //formatter:on
+                        CtMethod setMethod = CtMethod
+                                .make(code, ctClass);
+                        Logger.debug(code);
                         ctClass.addMethod(setMethod);
                     }
                 }
