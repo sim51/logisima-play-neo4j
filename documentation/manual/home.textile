@@ -53,7 +53,20 @@
         }
     </code>
 </pre>
-
+<h4>Supported types</h4>
+<p>
+    Neo4j doesn't support all kind of attributes (see http://docs.neo4j.org/chunked/snapshot/graphdb-neo4j-properties.html), so do my module. This is a list of supported (and tested) type :
+    <ul>
+        <li>String</li>
+        <li>Long (the object not the primitive type, see issue #11)</li>
+        <li>java.util.Date</li>
+        <li>Integer</li>
+        <li>int</li>
+        <li>Boolean</li>
+        <li>play.db.jpa.Blob</li>
+    </ul>
+</p>
+<h4>Basics methods</h4>
 <p>
     Models come with some basics methods :
     <ul>
@@ -142,11 +155,11 @@ With Neo4jRelatedTo annotation, you can also defined some attributes :
 <h4><a>Import</a></h4>
 <p>
     You can import an yml file into your database. To do it, yo can choose between :
-    <ul>
-        <li>Commmand line, by calling <code>play neo4j:import</code></li>
-        <li>Java, by calling the <code>load(String filename)</code> method from <code>play.modules.neo4j.util.Fixtures</code> class. It will be usefull for unit test !</li>    
-    </ul>
 </p>
+<ul>
+    <li>Commmand line, by calling <code>play neo4j:import</code></li>
+    <li>Java, by calling the <code>load(String filename)</code> method from <code>play.modules.neo4j.util.Fixtures</code> class. It will be usefull for unit test !</li>    
+</ul>
 
 <h4><a>Yml format</a></h4>
 <p>
@@ -168,13 +181,13 @@ For model, the format is the same as play! standard. First line contains the mod
 <p>
 For relation, there is a special format. All relation must begin with <code>Relation(id)</code> where id is a unique identifier of the relation.<br/>
 After, all relation must have three attributes :
+</p>
 <ul>
     <li><strong>Type</strong> Correspond to the name of the relation</li>
     <li><strong>From</strong> is the identifier of the start node</li>
     <li><strong>To</strong> is the identifier of the end node</li>
 </ul>
-<br/><u>Exemple :</u>
-</p>
+<p><u>Exemple :</u></p>
 <pre>
     <code>
         Relation(15):

@@ -64,8 +64,8 @@ public class Binder {
         this.clazz = clazz;
 
         // setting class attributs
-        Method[] methods = clazz.getMethods();
-        for (Method method : methods) {
+        Method[] classMethods = this.clazz.getMethods();
+        for (Method method : classMethods) {
             String propertyname;
             if (!isSetter(method)) {
                 continue;
