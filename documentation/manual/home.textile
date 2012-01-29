@@ -56,26 +56,29 @@
 <h4>Supported types</h4>
 <p>
     Neo4j doesn't support all kind of attributes (see http://docs.neo4j.org/chunked/snapshot/graphdb-neo4j-properties.html), so do my module. This is a list of supported (and tested) type :
-    <ul>
-        <li>String</li>
-        <li>Long (the object not the primitive type, see issue #11)</li>
-        <li>java.util.Date</li>
-        <li>Integer</li>
-        <li>int</li>
-        <li>Boolean</li>
-        <li>play.db.jpa.Blob</li>
-    </ul>
 </p>
+ <ul>
+	<li>String</li>
+    <li>Long (the object not the primitive type, see issue #11)</li>
+    <li>java.util.Date</li>
+    <li>Integer</li>
+    <li>Boolean</li>
+    <li>play.db.jpa.Blob</li>
+</ul>
+<p>
+	<strong>NB:</strong>In general, use Object instead of primitive type (Float vs float, Integer vs int, Boolean vs boolean ...).
+</p>
+    
 <h4>Basics methods</h4>
 <p>
     Models come with some basics methods :
-    <ul>
-        <li><code>getByKey(Long key)</code> : in neo4j there is no id field but a key one. It's the unique identifier of the object. This key is automaticly generate by the module. You can retrieve an Model simly by calling the <code>getByKey</code> method. Exemple : <code>User user = User.getByKey(3);</code></li>
-        <li><code>save()</code> : Save and index the object to the database</li>
-        <li><code>delete()</code> : Delete the object to the database</li>
-        <li><code>findAll()</code> : Retrieve all model object into the database. Becarefull there is no limitationwith this method. So if you have a million of object, this method return a million of object. Exemple : <code>List<User> user = User.findAll();</code> </li>
-    </ul>
 </p>
+<ul>
+	<li><code>getByKey(Long key)</code> : in neo4j there is no id field but a key one. It's the unique identifier of the object. This key is automaticly generate by the module. You can retrieve an Model simly by calling the <code>getByKey</code> method. Exemple : <code>User user = User.getByKey(3);</code></li>
+    <li><code>save()</code> : Save and index the object to the database</li>
+    <li><code>delete()</code> : Delete the object to the database</li>
+    <li><code>findAll()</code> : Retrieve all model object into the database. Becarefull there is no limitationwith this method. So if you have a million of object, this method return a million of object. Exemple : <code>List<User> user = User.findAll();</code> </li>
+</ul>
 
 <h3><a>Add a relation to your model</a></h3>
 <p>
@@ -102,11 +105,12 @@
 
 <p>
 With Neo4jRelatedTo annotation, you can also defined some attributes :
+</p> 
 <ul>
     <li><strong>lazy :</strong> like hibernate, you can do lazy loading for relation. By default, it's value is "false".</li>
     <li><strong>direction :</strong>to specified the direction of the relation. By default, it's "OUTGOING", but you can change it to "INCOMING". Direction "BOTH is not implemented !!!</li>
 </ul>
-</p> 
+
 
 <h3><a>Create an index</a></h3>
 <p>
