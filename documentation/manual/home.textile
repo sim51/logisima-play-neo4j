@@ -1,4 +1,4 @@
-<h1>LogiSima - Neo4j databas support</h1>
+<h1>LogiSima - Neo4j database support</h1>
 <p>
     This module allows you to use an embedded <a href="http://neo4j.org">Neo4j database</a> and managed your model with annotation (like JPA). This module is similar as <a href="http://www.springsource.org/spring-data/neo4j">Spring data neo4j</a>, it's the same philosophy.  
 </p>
@@ -12,7 +12,7 @@
 <pre>
     <code>
     # The logisima play cas module
-    module.neo4j=${play.path}/modules/neo4j-0.1
+    module.neo4j=${play.path}/modules/neo4j-1.0RC1
     </code>
 </pre>
 <h3><a>For play >= 1.2</a></h3>
@@ -22,7 +22,7 @@
 <pre>
     <code>
         require:    
-        &nbsp;&nbsp;- play -> neo4j 0.1
+        &nbsp;&nbsp;- play -> neo4j 1.0RC1
     </code>
 </pre>
 
@@ -78,6 +78,7 @@
     <li><code>save()</code> : Save and index the object to the database</li>
     <li><code>delete()</code> : Delete the object to the database</li>
     <li><code>findAll()</code> : Retrieve all model object into the database. Becarefull there is no limitationwith this method. So if you have a million of object, this method return a million of object. Exemple : <code>List<User> user = User.findAll();</code> </li>
+    <li><code>queryIndex()</code> : Do a lucene query on a specific index, and return a list of Object that match your query. Exemple : <code>List<User> user = User.queryIndex("lastname", "lastname:*s* AND firstname:*s*");</code> </li>
 </ul>
 
 <h3><a>Add a relation to your model</a></h3>
