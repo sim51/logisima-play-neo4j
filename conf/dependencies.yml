@@ -2,4 +2,3 @@ self: play -> neo4j 0.1
 
 require:
     - play
-    - org.neo4j -> neo4j 1.5

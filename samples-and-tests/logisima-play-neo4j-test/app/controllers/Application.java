@@ -1,18 +1,12 @@
 package controllers;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import models.User;
-
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexManager;
-
+import play.Logger;
 import play.db.jpa.Blob;
 import play.modules.neo4j.exception.Neo4jException;
-import play.modules.neo4j.util.Neo4j;
 import play.mvc.Controller;
 
 public class Application extends Controller {
@@ -50,14 +44,7 @@ public class Application extends Controller {
     }
 
     public static void searchUser(String query) {
-        List<User> users = new ArrayList<User>();
-        IndexManager index = Neo4j.db().index();
-        Index<Node> usersIndex = index.forNodes("lastname");
-        for (Node node : usersIndex.query("lastname:*" + query + "* OR firstname:*" + query + "*")) {
-            User user = new User();
-            user.setNode(node);
-            users.add(user);
-        }
+        List<User> users = User.queryIndex("lastname", "lastname:*" + query + "* OR firstname:*" + query + "*");
         render(users);
     }
 
@@ -74,14 +61,8 @@ public class Application extends Controller {
 
     public static void userSerachUserRelation(Long key, String query) throws Neo4jException {
         User user = User.getByKey(key);
-        List<User> users = new ArrayList<User>();
-        IndexManager index = Neo4j.db().index();
-        Index<Node> usersIndex = index.forNodes("lastname");
-        for (Node node : usersIndex.query("lastname", query)) {
-            User usr = new User();
-            usr.setNode(node);
-            users.add(usr);
-        }
+        Logger.debug(query);
+        List<User> users = User.queryIndex("lastname", "lastname:*" + query + "*");
         render("Application/user.html", user, users);
     }
 

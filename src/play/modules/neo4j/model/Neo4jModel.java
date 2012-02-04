@@ -25,6 +25,8 @@ import java.util.List;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
 
 import play.Logger;
 import play.Play;
@@ -211,6 +213,36 @@ public abstract class Neo4jModel {
         List<T> elements = new ArrayList<T>();
         Neo4jFactory factory = getFactory(className);
         elements = (List<T>) factory.findAll();
+        return elements;
+    }
+
+    /**
+     * Query a Neo4j index and return play model.
+     * 
+     * @param indexname
+     * @param query
+     * @return
+     */
+    public static <T extends Neo4jModel> List<T> queryIndex(String indexname, String query) {
+        throw new Neo4jPlayException("queryIndex() Must be overriden by Neo4jModelEnhancer");
+    }
+
+    /**
+     * Query a Neo4j index and return play model.
+     * 
+     * @param indexname
+     * @param query
+     * @return
+     * @throws Neo4jException
+     */
+    protected static <T extends Neo4jModel> List<T> _queryIndex(String indexname, String query) throws Neo4jException {
+        List<T> elements = new ArrayList<T>();
+        IndexManager index = Neo4j.db().index();
+        Index<Node> indexNodes = index.forNodes(indexname);
+        for (Node node : indexNodes.query(query)) {
+            T element = getByNode(node);
+            elements.add(element);
+        }
         return elements;
     }
 

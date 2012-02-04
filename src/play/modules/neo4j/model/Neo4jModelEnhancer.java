@@ -207,6 +207,17 @@ public class Neo4jModelEnhancer extends Enhancer {
         CtMethod findAllMethod = CtMethod.make(codeFindAll, ctClass);
         ctClass.addMethod(findAllMethod);
 
+        // ~~~~~~~~~~~~~~~
+        // Adding queryIndex() method
+        //@formatter:off
+        String queryIndex = "public static java.util.List queryIndex(String indexname, String query) {" +
+                                "return " + entityName + "._queryIndex(indexname, query);" +
+                             "}";
+        //@formatter:on
+        Logger.debug(queryIndex);
+        CtMethod queryIndexMethod = CtMethod.make(queryIndex, ctClass);
+        ctClass.addMethod(queryIndexMethod);
+
         // Done.
         applicationClass.enhancedByteCode = ctClass.toBytecode();
         ctClass.defrost();
