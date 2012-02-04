@@ -5,7 +5,7 @@
 
 <h2><a>Installation</a></h2>
 <h3><a>Enabled Neo4j module</a></h3>
-<h4><a>For play $&lt; 1.2</a></h4>
+<h4><a>For play &lt; 1.2</a></h4>
 <p>
     In the conf/application.conf file, enable LogiSima Neo4j module with this line :
 </p>
