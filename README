@@ -10,9 +10,4 @@ Features :
 * There is a command line "play neo4j:help"
 * you can import an YML file into database by cli : "play neo4j:import" (see format with this file https://github.com/sim51/logisima-play-neo4j/blob/master/samples-and-tests/logisima-play-neo4j-test/conf/data.yml) 
 
-NB:
-Model class have to extend Neo4jModel class
-
-TODO:
-* See Lazy
-* See delete a relation and save
+NB: Model class have to extend Neo4jModel class
