@@ -33,6 +33,9 @@ public class User extends Neo4jModel {
     @Neo4jRelatedTo("IS_FRIEND")
     public List<User> friends;
 
+    @Neo4jRelatedTo(value = "IS_FRIEND", direction = "INCOMING")
+    public List<User> reversefriends;
+
     @Neo4jRelatedTo("IS_FAMILLY")
     public List<User> famillies;
 

@@ -164,6 +164,8 @@ public class Fixtures {
             throw new YAMLException(e, yamlFile);
         } catch (Throwable e) {
             throw new RuntimeException("Cannot load fixture " + name + ": " + e.getMessage(), e);
+        } finally {
+            idCache = new HashMap<String, Object>();
         }
 
     }
