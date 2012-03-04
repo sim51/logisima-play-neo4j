@@ -8,6 +8,8 @@ import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.annotation.Neo4jRelatedTo;
 import play.modules.neo4j.model.Neo4jModel;
 
+import com.google.gson.Gson;
+
 public class User extends Neo4jModel {
 
     public String     login;
@@ -45,4 +47,7 @@ public class User extends Neo4jModel {
     @Neo4jRelatedTo(value = "IS_A_CLASSMATE", lazy = true)
     public List<User> classmates;
 
+    public String toString() {
+        return new Gson().toJson(this);
+    }
 }

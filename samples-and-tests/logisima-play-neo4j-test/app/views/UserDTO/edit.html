@@ -1,0 +1,55 @@
+#{extends 'main.html' /}
+#{set title:'User DTO' /}
+
+<h1>User ${userDTO?.user?.login}</h1>
+
+#{menu/}
+
+<h2>Porfile ${user?.login}</h2>
+
+<form name="user" method="POST" action="@{UserDTO.save()}" enctype="multipart/form-data">
+    
+    <input type="hidden" name="userDTO.user.key" value="${userDTO?.user?.key}" />
+    
+    <label for="university">University Name</label>
+    <input type="text" name="userDTO.universityName" id="university" value="${userDTO?.universityName}"/>
+    <br/>
+    
+    <label for="login">Login</label>
+    <input type="text" name="userDTO.user.login" id="login" value="${userDTO?.user?.login}"/>
+    <br/>
+    
+    <label for="firstname">Firstanme</label>
+    <input type="text" name="userDTO.user.firstname" id="firstname" value="${userDTO?.user?.firstname}"/>
+    <br/>
+    
+    <label for="lastname">Lastname</label>
+    <input type="text" name="userDTO.user.lastname" id="lastname" value="${userDTO?.user?.lastname}"/>
+    <br/>
+    
+    <label for="email">Email</label>
+    <input type="text" name="userDTO.user.email" id="email" value="${userDTO?.user?.email}"/>
+    <br/>
+    
+    <label for="age">Age</label>
+    <input type="text" name="userDTO.user.age" id="age" value="${userDTO?.user?.age}"/>
+    <br/>
+    
+    <label for="birthday">Birthday</label>
+    <input type="text" name="userDTO.user.birthday" id="birthday" value="${userDTO?.user?.birthday?.format('dd/MM/yyyy')}"/>
+    <br/>
+    
+    <label for="isActive">Is active</label>
+    <input type="checkbox" name="userDTO.user.isActive" id="isActive" value="1" #{if user?.isActive}checked#{/if}/>
+    <br/>
+    
+    <label for="devScore">Dev score</label>
+    <input type="text" name="userDTO.user.devScore" id="devScore" value="${userDTO?.user?.devScore}"/>
+    <br/>
+    
+    <label for="avatar">Avatar</label>
+    <input type="file" name="userDTO.user.avatar" id="avatar" value="${userDTO?.user?.avatar}"/>
+    <br/>
+    
+    <input type="submit" value="Submit"/>
+</form>
