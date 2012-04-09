@@ -70,6 +70,20 @@
                 <a href="@{Application.user(classmate.key)}">${classmate.firstname} ${classmate.lastname}</a>&nbsp;
                 <input type="image" src="@{'/public/images/cross.png'}" />
              </form>
+             <ul>
+             #{list items:classmate.classmates, as:'classmate2'}
+                <li>
+                     <a href="@{Application.user(classmate2.key)}">${classmate2.firstname} ${classmate2.lastname}</a>&nbsp;
+                     <ul>
+                         #{list items:classmate2.classmates, as:'classmate3'}
+                             <li>
+                                <a href="@{Application.user(classmate3.key)}">${classmate3.firstname} ${classmate3.lastname}</a>&nbsp;
+                             </li>
+                         #{/list}
+                     </ul>     
+                </li>
+             #{/list}
+             </ul>
         #{/list}
     </li>
     #{/if}
@@ -89,7 +103,7 @@
             <form action="@{Application.userAddRelation()}" method="POST">
                 <input type="hidden" name="key" value=${user.key} />
                 <input type="hidden" name="related" value=${related.key} />
-                <a href="@{Application.user(friend.key)}">${related.firstname} ${related.lastname}</a>&nbsp;
+                <a href="@{Application.user(related.key)}">${related.firstname} ${related.lastname}</a>&nbsp;
                 <select name="type">
                     <option value="1" selected="selected">Friend</option>
                     <option value="2" selected="selected">Familly</option>
