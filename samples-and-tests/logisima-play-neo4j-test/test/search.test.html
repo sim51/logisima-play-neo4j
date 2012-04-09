@@ -1,0 +1,32 @@
+#{selenium 'search1'}
+    open('/')
+    type('query', 'Sécher')
+    clickAndWait('//input[@value='search']')
+    waitForPageToLoad(100)
+    assertTextNotPresent('Jean-François')
+    assertTextNotPresent('Benoît')
+    assertTextNotPresent('Antoine')
+    assertTextPresent('Olivier')
+#{/selenium}
+
+#{selenium 'search2'}
+    open('/')
+    type('query', 'ard')
+    clickAndWait('//input[@value='search']')
+    waitForPageToLoad(100)
+    assertTextPresent('Jean-François')
+    assertTextPresent('Benoît')
+    assertTextPresent('Antoine')
+    assertTextNotPresent('Olivier')
+#{/selenium}
+
+#{selenium 'search3'}
+    open('/')
+    type('query', 'benoît')
+    clickAndWait('//input[@value='search']')
+    waitForPageToLoad(100)
+    assertTextNotPresent('Jean-François')
+    assertTextPresent('Benoît')
+    assertTextNotPresent('Antoine')
+    assertTextNotPresent('Olivier')
+#{/selenium}
