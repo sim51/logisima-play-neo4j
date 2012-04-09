@@ -61,4 +61,5 @@ public class Import {
         Fixtures.loadYml(filename + ".yml");
         Neo4j.destroy();
     }
+
 }

@@ -2,3 +2,27 @@ self: play -> neo4j 1.0RC1
 
 require:
     - play
+    - org.neo4j -> neo4j-spatial 0.7
+    
+repositories:
+    - Neo4j:
+        type: iBiblio
+        root: "http://m2.neo4j.org/content/repositories/releases"
+        contains:
+            - org.neo4j -> *   
+    - osgeo:
+        type: iBiblio
+        root: "http://download.osgeo.org/webdav/geotools/"          
+    - opengeo:
+        type: iBiblio
+        root: "http://repo.opengeo.org"
+        contains:
+            - org.opengeo -> *
+    - tinkerpop:
+        type: iBiblio
+        root: "http://tinkerpop.com/maven2"
+        contains:
+            - com.tinkerpop -> *           
+            
+            
+

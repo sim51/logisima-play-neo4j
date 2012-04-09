@@ -7,11 +7,13 @@ import models.User;
 import play.Logger;
 import play.db.jpa.Blob;
 import play.modules.neo4j.exception.Neo4jException;
+import play.modules.neo4j.util.Neo4j;
 import play.mvc.Controller;
 
 public class Application extends Controller {
 
     public static void index() {
+        Logger.info("spatial test " + Neo4j.spatial().containsLayer("OSM"));
         List users = User.findAll();
         render(users);
     }
