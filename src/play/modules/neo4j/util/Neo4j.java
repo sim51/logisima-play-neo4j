@@ -18,6 +18,7 @@
  */
 package play.modules.neo4j.util;
 
+import org.neo4j.gis.spatial.SpatialDatabaseService;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -38,8 +39,9 @@ import play.modules.neo4j.exception.Neo4jPlayException;
  */
 public class Neo4j {
 
-    private static ThreadLocal<GraphDatabaseService>          graphDb        = new ThreadLocal<GraphDatabaseService>();
-    private static ThreadLocal<WrappingNeoServerBootstrapper> bootstrapperDb = new ThreadLocal<WrappingNeoServerBootstrapper>();
+    private static volatile GraphDatabaseService          graphDb;
+    private static volatile WrappingNeoServerBootstrapper bootstrapperDb;
+    private static volatile SpatialDatabaseService        spatialDb;
 
     /**
      * Method to create graphDb instance (start the server).
@@ -47,18 +49,23 @@ public class Neo4j {
      * @throws Neo4jPlayException
      */
     public static void initialize() throws Neo4jPlayException {
-        if (graphDb.get() != null) {
+        if (graphDb != null) {
             throw new Neo4jPlayException("The graphDb is already initialize.");
         }
         String DBPath = Play.configuration.getProperty("neo4j.path");
         Logger.debug("Neo4j database path is :" + DBPath);
         EmbeddedGraphDatabase graph = new EmbeddedGraphDatabase(DBPath);
+        graphDb = graph;
         if (Play.mode == Mode.DEV) {
             WrappingNeoServerBootstrapper bootstrapper = new WrappingNeoServerBootstrapper(graph);
             bootstrapper.start();
-            bootstrapperDb.set(bootstrapper);
+            bootstrapperDb = bootstrapper;
         }
-        graphDb.set(graph);
+        Boolean isSpatial = Boolean.valueOf(Play.configuration.getProperty("neo4j.spatial", "false"));
+        if (isSpatial) {
+            SpatialDatabaseService spatial = new SpatialDatabaseService(graph);
+            spatialDb = spatial;
+        }
     }
 
     /**
@@ -66,15 +73,13 @@ public class Neo4j {
      */
     public static void destroy() {
         if (Play.mode == Mode.DEV) {
-            if (bootstrapperDb.get() != null) {
-                bootstrapperDb.get().stop();
-                bootstrapperDb.remove();
+            if (bootstrapperDb != null) {
+                bootstrapperDb.stop();
             }
         }
-        if (graphDb.get() != null) {
-            graphDb.get().shutdown();
+        if (graphDb != null) {
+            graphDb.shutdown();
         }
-        graphDb.remove();
     }
 
     /**
@@ -83,7 +88,20 @@ public class Neo4j {
      * @return
      */
     public static GraphDatabaseService db() {
-        return graphDb.get();
+        if (graphDb == null) {
+            Logger.debug("Can't get DB from local thread !!!");
+        }
+        Logger.debug("Current thread is " + Thread.currentThread().getName() + " " + Thread.currentThread().getId());
+        return graphDb;
+    }
+
+    /**
+     * Method to retrieve the spatialDb into the ThreadLocal.
+     * 
+     * @return
+     */
+    public static SpatialDatabaseService spatial() {
+        return spatialDb;
     }
 
     /**
