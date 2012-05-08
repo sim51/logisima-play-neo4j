@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<projectDescription>
+	<name>touiteur</name>
+	<comment></comment>
+	<projects>
+	</projects>
+	<buildSpec>
+		<buildCommand>
+			<name>org.eclipse.jdt.core.javabuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+	</buildSpec>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+		<nature>org.playframework.playclipse.playNature</nature>
+	</natures>
+	<linkedResources><link><name>secure</name><type>2</type><location>/usr/local/play/play-1.2.4/modules/secure/app</location></link>
+<link><name>conf/secure</name><type>2</type><location>/usr/local/play/play-1.2.4/modules/secure/conf</location></link>
+<link><name>public/secure</name><type>2</type><location>/usr/local/play/play-1.2.4/modules/secure/public</location></link>
+<link><name>logisima-play-neo4j</name><type>2</type><location>/home/bsimard/workspace_logisima/logisima-play-neo4j/app</location></link>
+<link><name>conf/logisima-play-neo4j</name><type>2</type><location>/home/bsimard/workspace_logisima/logisima-play-neo4j/conf</location></link>
+</linkedResources>
+</projectDescription>

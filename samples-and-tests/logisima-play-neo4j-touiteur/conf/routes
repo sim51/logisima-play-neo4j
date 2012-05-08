@@ -1,0 +1,21 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home page
+GET     /                                       Application.index
+GET     /user/{key}                             Application.user
+GET     /user/search/{key}                      Application.searchUser
+POST    /touite		                            Application.touite
+GET   /touite/{key}		                    Application.reTouite
+
+# Ignore favicon requests
+GET     /favicon.ico                            404
+
+# Map static resources from the /app/public folder to the /public path
+GET     /public/                                staticDir:public
+
+*		/										module:secure
+
+# Catch all
+*       /{controller}/{action}                  {controller}.{action}

@@ -1,0 +1,95 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+
+<div class="row">
+    <div class="span4">
+        
+        <div class="row">
+            <div class="span1">
+                <img src="@{application.userAvatar(user?.key)}" alt="${user.firstname} ${user.lastname}"/>
+            </div>
+            <div class="span3">
+                <h2>
+                     <a href="@{application.user(user?.key)}" title="${user.firstname} ${user.lastname}">
+                        ${user.firstname} ${user.lastname}
+                     </a>
+                </h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="span1">
+                ${user.nbTouite}<br/>Touites
+            </div>
+            <div class="span1">
+                ${user.friends.size}<br/>Abonnements
+            </div>
+            <div class="span1">
+               ${user.followers.size}<br/>Abonnées
+            </div>
+        </div>  
+        
+        #{if user.login != session.username}
+            <div class="row">
+                <div class="span4">   
+                     <a href="@{application.follow(user.key)}" title="Follow ${user.firstname} ${user.lastname}">
+                        Follow ${user.firstname} ${user.lastname}
+                     </a>
+                </div>
+            </div>
+         #{/if}
+        
+        <div class="row">
+            <div class="span4">
+                <h2>What's new ?</h2>
+                <form name="touite" method="POST" action="@{Application.touite()}">
+                    <textarea rows="4" cols="30" name="text"></textarea></br>
+                    <input type="submit" value="Submit"/>
+                </form>
+            </div>
+       </div>
+       <div class="row">
+            <div class="span4">
+                <h2>Suggestion</h2>
+                #{list items:recos, as:'reco'}
+                    <div class="row">
+                        <div class="span1">
+                            <img src="@{application.userAvatar(reco.key)}" alt="${reco.firstname} ${reco.lastname}"/>
+                        </div>
+                        <div class="span3">
+                            ${reco.firstname} ${reco.lastname} <span class="login">@${reco.login}</span>
+                            <a href="@{application.user(reco.key)}" title="${reco.firstname} ${reco.lastname}">
+                                Suivre
+                            </a>
+                        </div>
+                    </div>
+                #{/list}
+            </div>
+       </div>
+    </div> 
+    
+    <div class="span8">
+        <h2>Touites</h2>
+        <hr/>
+        #{list items:touites, as:'touite'}
+            %{models.User author = touite.getAuthor() }%
+            <div class="row">
+                <div class="span1">
+                    <img src="@{application.userAvatar(author.key)}" alt="${author.firstname} ${author.lastname}"/>
+                </div>
+                <div class="span7">
+                    <h3 class="toute-title">${author.firstname} ${author.lastname} <span class="login">@${author.login}</span></h3>
+                    <span class="toute-time">${touite?.created?.format('dd/MM/yyyy HH:mm:ss')}</span>
+                    <p>${touite.text}</p>
+                    <div class="touite-tools">
+                    #{if author.login != session.username}
+                        <a href="@{application.reTouite(touite.key)}">
+                            Retouite !
+                        </a>
+                    #{/if}
+                    </div>
+                </div>
+            </div>
+            <br/>
+        #{/list}    
+    </div>
+</div>

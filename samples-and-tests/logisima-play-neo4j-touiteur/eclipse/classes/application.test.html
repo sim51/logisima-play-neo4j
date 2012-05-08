@@ -1,0 +1,9 @@
+#{selenium 'index'}
+    deleteAllVisibleCookies()
+    open('/')
+    assertTitle('Home')
+    assertTextPresent('Jean-François')
+    assertTextPresent('Benoît')
+    assertTextPresent('Antoine')
+    assertTextPresent('Olivier')
+#{/selenium}

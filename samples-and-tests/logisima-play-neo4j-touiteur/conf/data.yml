@@ -1,0 +1,41 @@
+User(User_1):
+ login: 'jeff'
+ email: 'jeff@gmail.com'
+ firstname: 'Jean-François'
+ lastname: 'BOSSARD'
+ birthday: '@@Date@@-3600000'
+ 
+User(User_2):
+ login: 'ben'
+ email: 'ben@gmail.com'
+ firstname: 'Ben'
+ lastname: 'Lada'
+ birthday: '@@Date@@-3600000'
+ 
+User(User_3):
+ login: 'bob'
+ email: 'bob@gmail.com'
+ firstname: 'Bob'
+ lastname: 'Leponge'
+ birthday: '@@Date@@-3600000'
+ 
+User(User_4):
+ login: 'harlie'
+ email: 'charlie@gmail.com'
+ firstname: 'Charlie'
+ lastname: 'Ouestil'
+ birthday: '@@Date@@-3600000'
+ 
+User(User_5):
+ login: 'jimy'
+ email: 'jimy@gmail.com'
+ firstname: 'Jimy'
+ lastname: 'Hendrix'
+ birthday: '@@Date@@-3600000'
+
+User(User_6):
+ login: 'sim51'
+ email: 'sim51@gmail.com'
+ firstname: 'Benoit'
+ lastname: 'Simard'
+ birthday: '@@Date@@-3600000'

@@ -1,0 +1,104 @@
+#{extends 'main.html' /}
+#{set title:'User' /}
+
+<div class="row">
+    <div class="span4">
+        
+        <div class="row">
+            <div class="span1">
+                <img src="@{application.userAvatar(user?.key)}" alt="${user.firstname} ${user.lastname}"/>
+            </div>
+            <div class="span3">
+                <h2>
+                     <a href="@{application.user(user?.key)}" title="${user.firstname} ${user.lastname}">
+                        ${user.firstname} ${user.lastname}
+                     </a>
+                </h2>
+            </div>
+        </div>
+        <div class="row">
+            <div class="span1">
+                ${user.nbTouite}<br/>Touites
+            </div>
+            <div class="span1">
+                ${user.friends.size}<br/>Abonnements
+            </div>
+            <div class="span1">
+               ${user.followers.size}<br/>Abonnées
+            </div>
+        </div>  
+        
+        #{if user.login != session.username}
+            <div class="row">
+                <div class="span4">   
+                     <a href="@{application.follow(user.key)}" title="Follow ${user.firstname} ${user.lastname}">
+                        Follow ${user.firstname} ${user.lastname}
+                     </a>
+                </div>
+            </div>
+         #{/if}
+        
+        <div class="row">
+            <div class="span4">
+                <h2>What's new ?</h2>
+                <form name="touite" method="POST" action="@{Application.touite()}">
+                    <textarea rows="4" cols="30" name="text"></textarea></br>
+                    <input type="submit" value="Submit"/>
+                </form>
+            </div>
+       </div>
+       <div class="row">
+            <div class="span4">
+                <h2>Suggestion</h2>
+                #{list items:recos, as:'reco'}
+                    <div class="row">
+                        <div class="span1">
+                            <img src="@{application.userAvatar(reco.key)}" alt="${reco.firstname} ${reco.lastname}"/>
+                        </div>
+                        <div class="span3">
+                            ${reco.firstname} ${reco.lastname} <span class="login">@${reco.login}</span>
+                            <a href="@{application.user(reco.key)}" title="${reco.firstname} ${reco.lastname}">
+                                Suivre
+                            </a>
+                        </div>
+                    </div>
+                #{/list}
+            </div>
+       </div>
+    </div> 
+    
+    <div class="span8">
+
+        <form name="user" method="POST" action="@{Register.saveUser()}" enctype="multipart/form-data">
+            
+            <input type="hidden" name="user.key" value="${user?.key}" />
+            
+            <label for="login">Login</label>
+            <input type="text" name="user.login" id="login" value="${user?.login}"/>
+            <br/>
+            
+            <label for="firstname">Firstanme</label>
+            <input type="text" name="user.firstname" id="firstname" value="${user?.firstname}"/>
+            <br/>
+            
+            <label for="lastname">Lastname</label>
+            <input type="text" name="user.lastname" id="lastname" value="${user?.lastname}"/>
+            <br/>
+            
+            <label for="email">Email</label>
+            <input type="text" name="user.email" id="email" value="${user?.email}"/>
+            <br/>
+            
+            <label for="birthday">Birthday</label>
+            <input type="text" name="user.birthday" id="birthday" value="${user?.birthday?.format('dd/MM/yyyy')}"/>
+            <br/>
+            
+            <label for="avatar">Avatar</label>
+            <input type="file" name="user.avatar" id="avatar" value="${user?.avatar}"/>
+            <br/>
+            
+            <input type="submit" value="Submit"/>
+        </form>
+    </div>
+</div>
+        

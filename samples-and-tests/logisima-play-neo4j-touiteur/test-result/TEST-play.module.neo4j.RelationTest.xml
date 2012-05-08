@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<testsuite failures="0" time="10.482" errors="0" skipped="0" tests="3" name="play.module.neo4j.RelationTest">
+  <testcase classname="play.module.neo4j.RelationTest" name="lazyLoadingTest" time="2.27">
+      </testcase>
+  <testcase classname="play.module.neo4j.RelationTest" name="simpleLoadingTest" time="4.178">
+      </testcase>
+  <testcase classname="play.module.neo4j.RelationTest" name="reverseLoadingTest" time="4.034">
+      </testcase>
+</testsuite>

@@ -1,0 +1,31 @@
+#{extends 'main.html' /}
+#{set title:'Home' /}
+
+<div class="row">
+    <div class="span4">
+        <br/>
+    </div>
+    <div class="span8">
+        <h2>Result of the search</h2>
+        <hr/>
+        #{list items:users, as:'user'}
+            <div class="row">
+                <div class="span1">
+                    <a href="@{application.user(user.key)}" title="${user.firstname} ${user.lastname}">
+                        <img src="@{application.userAvatar(user.key)}" alt="${user.firstname} ${user.lastname}"/>
+                    </a>
+                </div>
+                <div class="span3">
+                    <a href="@{application.user(user.key)}" title="${user.firstname} ${user.lastname}">
+                        ${user.firstname} ${user.lastname} <span class="login">@${user.login}</span>
+                    </a>
+                    <div class="touite-tools">
+                        <a href="@{application.follow(user.key)}" title="${user.firstname} ${user.lastname}">
+                            Suivre
+                        </a>
+                    </div>
+                </div>
+            </div>
+        #{/list}
+    </div>
+</div>
