@@ -104,7 +104,7 @@ public abstract class Neo4jModel {
      */
     public Long getKey() {
         if (this.node != null && this.node.getProperty("key", null) != null) {
-            return (Long) this.node.getProperty("key", null);
+            return Long.valueOf("" + this.node.getProperty("key", null));
         }
         else {
             return this.key;
@@ -268,7 +268,12 @@ public abstract class Neo4jModel {
         Class clazz = Play.classes.getApplicationClass(className).javaClass;
         Neo4jFactory factory = getFactory(clazz);
         Node node = factory.getByKey(key, Neo4jUtils.getIndexName(clazz.getSimpleName(), "key"));
-        return getByNode(node);
+        if (node == null) {
+            return null;
+        }
+        else {
+            return getByNode(node);
+        }
     }
 
     /**

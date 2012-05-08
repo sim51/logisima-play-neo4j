@@ -7,7 +7,9 @@ import java.util.List;
 
 import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.IteratorUtil;
 
@@ -104,9 +106,11 @@ public class User extends Neo4jModel {
         //@formatter:off
         ExecutionResult result = engine.execute("" +
                 "START me=node(" + this.node.getId() + ") " +
-                "MATCH me-[:IS_FRIEND]->friend-[:NEXT*1..10]->touite " +
+                "MATCH me-[:IS_FRIEND*0..1]->friend-[:NEXT*1..50000]->touite, touite-[r?:RETOUITE_OF]->touite " +
+                "WHERE r is null " +
                 "RETURN touite " +
                 "ORDER BY touite.created DESC " +
+                "SKIP 0 " +
                 "LIMIT 10");
         //@formatter:on
         List<Touite> touites = new ArrayList<Touite>();
@@ -138,17 +142,27 @@ public class User extends Neo4jModel {
         Transaction tx = Neo4j.db().beginTx();
         try {
             Touite lastTouite = this.getLastTouite();
-            Touite touite = this.getByKey(key);
+            Touite touite = Touite.getByKey(key);
             Touite retouite = new Touite();
             retouite.text = touite.text;
             retouite.created = new Date();
             retouite.save();
+
+            // delete the previous NEXT relationship
+            Relationship next = this.node.getSingleRelationship(RelationType.NEXT, Direction.OUTGOING);
+            next.delete();
+
             // create next link between user & touite
             this.node.createRelationshipTo(retouite.node, RelationType.NEXT);
+
+            // relink lasttouite with the new one
             retouite.node.createRelationshipTo(lastTouite.node, RelationType.NEXT);
 
             // create author link
             retouite.node.createRelationshipTo(touite.getAuthor().node, RelationType.AUTHOR);
+
+            // create retouite link
+            retouite.node.createRelationshipTo(touite.node, RelationType.RETOUITE_OF);
 
             // +1
             if (this.nbTouite != null) {
@@ -172,11 +186,20 @@ public class User extends Neo4jModel {
             touite.text = text;
             touite.created = new Date();
             touite.save();
+
+            Touite lastTouite = this.getLastTouite();
+            // delete the previous NEXT relationship
+            Relationship next = this.node.getSingleRelationship(RelationType.NEXT, Direction.OUTGOING);
+            next.delete();
+
             // create next link between user & touite
             this.node.createRelationshipTo(touite.node, RelationType.NEXT);
 
             // create author link
             touite.node.createRelationshipTo(this.node, RelationType.AUTHOR);
+
+            // relink lasttouite with the new one
+            touite.node.createRelationshipTo(lastTouite.node, RelationType.NEXT);
 
             // +1
             if (this.nbTouite != null) {

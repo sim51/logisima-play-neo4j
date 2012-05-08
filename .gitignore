@@ -21,6 +21,10 @@
 /samples-and-tests/logisima-play-neo4j-test/.project
 /samples-and-tests/logisima-play-neo4j-test/data
 /samples-and-tests/logisima-play-neo4j-test/.settings/
+.checkstyle
+/samples-and-tests/logisima-play-neo4j-test/.shell_history
+/samples-and-tests/logisima-play-neo4j-touiteur/data/
+/samples-and-tests/logisima-play-neo4j-touiteur/db/
 .externalToolBuilders/
 
 

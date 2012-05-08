@@ -37,7 +37,7 @@
                 </div>
             </div>
          #{/if}
-        
+        <br/>
         <div class="row">
             <div class="span4">
                 <h2>What's new ?</h2>
@@ -53,11 +53,13 @@
                 #{list items:recos, as:'reco'}
                     <div class="row">
                         <div class="span1">
-                            <img src="@{application.userAvatar(reco.key)}" alt="${reco.firstname} ${reco.lastname}"/>
+                            <a href="@{application.user(reco.key)}" title="${reco.firstname} ${reco.lastname}">
+                                <img src="@{application.userAvatar(reco.key)}" alt="${reco.firstname} ${reco.lastname}"/>
+                            </a>
                         </div>
                         <div class="span3">
                             ${reco.firstname} ${reco.lastname} <span class="login">@${reco.login}</span>
-                            <a href="@{application.user(reco.key)}" title="${reco.firstname} ${reco.lastname}">
+                            <a href="@{application.follow(reco.key)}" title="${reco.firstname} ${reco.lastname}">
                                 Suivre
                             </a>
                         </div>
