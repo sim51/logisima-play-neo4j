@@ -1,27 +1,21 @@
 package controllers;
 
-import java.util.Date;
 import java.util.List;
 
 import models.User;
-import play.Logger;
-import play.db.jpa.Blob;
 import play.modules.neo4j.exception.Neo4jException;
-import play.modules.neo4j.util.Neo4j;
 import play.mvc.Controller;
 
 public class Application extends Controller {
 
     public static void index() {
-        Logger.info("spatial test " + Neo4j.spatial().containsLayer("OSM"));
+        // Logger.info("spatial test " + Neo4j.spatial().containsLayer("OSM"));
         List users = User.findAll();
         render(users);
     }
 
     public static void user(Long key) throws Neo4jException {
         User user = User.getByKey(key);
-        Date date = user.birthday;
-        Blob blob = user.avatar;
         render(user);
     }
 
@@ -50,6 +44,12 @@ public class Application extends Controller {
         render(users);
     }
 
+    public static void searchUserRelation(String query, Long key) throws Neo4jException {
+        List<User> users = User.queryIndex("lastname", "lastname:*" + query + "* OR firstname:*" + query + "*");
+        User user = User.getByKey(key);
+        render("@user", user, users);
+    }
+
     public static void userAvatar(Long key) throws Neo4jException {
         User user = User.getByKey(key);
         if (user.avatar != null) {
@@ -59,13 +59,6 @@ public class Application extends Controller {
         else {
             notFound();
         }
-    }
-
-    public static void userSerachUserRelation(Long key, String query) throws Neo4jException {
-        User user = User.getByKey(key);
-        Logger.debug(query);
-        List<User> users = User.queryIndex("lastname", "lastname:*" + query + "*");
-        render("Application/user.html", user, users);
     }
 
     public static void userAddRelation(Long key, Long related, int type) throws Neo4jException {

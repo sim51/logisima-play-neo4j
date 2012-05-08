@@ -18,12 +18,14 @@
  */
 package play.modules.neo4j.util;
 
-import org.neo4j.gis.spatial.SpatialDatabaseService;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.kernel.EmbeddedGraphDatabase;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.kernel.GraphDatabaseAPI;
 import org.neo4j.server.WrappingNeoServerBootstrapper;
 
 import play.Logger;
@@ -41,7 +43,6 @@ public class Neo4j {
 
     private static volatile GraphDatabaseService          graphDb;
     private static volatile WrappingNeoServerBootstrapper bootstrapperDb;
-    private static volatile SpatialDatabaseService        spatialDb;
 
     /**
      * Method to create graphDb instance (start the server).
@@ -54,17 +55,14 @@ public class Neo4j {
         }
         String DBPath = Play.configuration.getProperty("neo4j.path");
         Logger.debug("Neo4j database path is :" + DBPath);
-        EmbeddedGraphDatabase graph = new EmbeddedGraphDatabase(DBPath);
+        Map<String, String> config = new HashMap<String, String>();
+        config.put("enable_remote_shel", "true");
+        GraphDatabaseService graph = new GraphDatabaseFactory().newEmbeddedDatabase(DBPath);
         graphDb = graph;
         if (Play.mode == Mode.DEV) {
-            WrappingNeoServerBootstrapper bootstrapper = new WrappingNeoServerBootstrapper(graph);
+            WrappingNeoServerBootstrapper bootstrapper = new WrappingNeoServerBootstrapper((GraphDatabaseAPI) graph);
             bootstrapper.start();
             bootstrapperDb = bootstrapper;
-        }
-        Boolean isSpatial = Boolean.valueOf(Play.configuration.getProperty("neo4j.spatial", "false"));
-        if (isSpatial) {
-            SpatialDatabaseService spatial = new SpatialDatabaseService(graph);
-            spatialDb = spatial;
         }
     }
 
@@ -96,15 +94,6 @@ public class Neo4j {
     }
 
     /**
-     * Method to retrieve the spatialDb into the ThreadLocal.
-     * 
-     * @return
-     */
-    public static SpatialDatabaseService spatial() {
-        return spatialDb;
-    }
-
-    /**
      * Method to reinitialize the graph database.
      */
     public static void clear() {
@@ -113,7 +102,7 @@ public class Neo4j {
             // for all node, we first delete all relation, and after we delete the node
             for (Node node : db().getAllNodes()) {
                 Logger.debug("Deleting node " + node.getId());
-                for (Relationship relation : node.getRelationships()) {
+                for (org.neo4j.graphdb.Relationship relation : node.getRelationships()) {
                     Logger.debug("Deleting relation " + relation.getId() + " for node " + node.getId());
                     relation.delete();
                 }

@@ -1,8 +1,7 @@
-self: play -> neo4j 1.0RC1
+self: play -> neo4j 1.0RC
 
 require:
     - play
-    - org.neo4j -> neo4j-spatial 0.7
     
 repositories:
     - Neo4j:

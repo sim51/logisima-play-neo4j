@@ -61,7 +61,7 @@
     #{/if}
     #{if user.classmates.size() > 0}
     <li>
-        <strong>Classmates :</strong>
+        <strong>Classmates (${user.classmates.size()}):</strong>
         #{list items:user.classmates, as:'classmate'}
             <form action="@{Application.userDeleteRelation()}">
                 <input type="hidden" name="type" value="4" />
@@ -90,7 +90,7 @@
 </ul>
 
 <h3>Adding relation</h3>
-<form action="@{Application.userSerachUserRelation()}" method="POST">
+<form action="@{Application.searchUserRelation()}" method="POST">
     <label for="query">Search a user :</label> 
     <input type="text"  name="query" id="query" />
     <input type="hidden" name="key" value=${user.key} />

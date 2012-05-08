@@ -136,6 +136,8 @@ public abstract class Neo4jModel {
      */
     public void setNode(Node node) {
         this.node = node;
+        this.shouldBeSave = Boolean.FALSE;
+        initializeRelations();
     }
 
     /**

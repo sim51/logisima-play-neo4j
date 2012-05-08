@@ -29,7 +29,7 @@ public @interface Neo4jRelatedTo {
 
     String value() default "";
 
-    boolean lazy() default false;
+    boolean lazy() default true;
 
     // can be "OUTGOING" or "INCOMING" but not both !
     String direction() default "OUTGOING";

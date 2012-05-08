@@ -10,10 +10,7 @@ import java.util.List;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.ReturnableEvaluator;
-import org.neo4j.graphdb.StopEvaluator;
-import org.neo4j.graphdb.Traverser;
-import org.neo4j.graphdb.Traverser.Order;
+import org.neo4j.graphdb.Relationship;
 
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
@@ -37,10 +34,11 @@ public class Neo4jRelationFactory {
                 // getting setter for node
                 Method setNode = clazz.getMethod("setNode", Node.class);
 
-                Traverser traverser = node.traverse(Order.BREADTH_FIRST, StopEvaluator.END_OF_GRAPH,
-                        ReturnableEvaluator.ALL_BUT_START_NODE, DynamicRelationshipType.withName(relationName),
-                        Direction.valueOf(direction));
-                for (Node item : traverser.getAllNodes()) {
+                node.getRelationships(Direction.valueOf(direction), DynamicRelationshipType.withName(relationName))
+                        .iterator();
+                for (Relationship relation : node.getRelationships(Direction.valueOf(direction),
+                        DynamicRelationshipType.withName(relationName))) {
+                    Node item = relation.getEndNode();
                     T nodeWrapper = (T) constructor.newInstance();
                     setNode.invoke(nodeWrapper, item);
                     list.add(nodeWrapper);
