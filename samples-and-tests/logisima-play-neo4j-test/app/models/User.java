@@ -32,7 +32,7 @@ public class User extends Neo4jModel {
 
     public Boolean    isActive;
 
-    @Neo4jRelatedTo("IS_FRIEND")
+    @Neo4jRelatedTo(value = "IS_FRIEND", lazy = false)
     public List<User> friends;
 
     @Neo4jRelatedTo(value = "IS_FRIEND", direction = "INCOMING")

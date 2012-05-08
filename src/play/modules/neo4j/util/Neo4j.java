@@ -73,10 +73,12 @@ public class Neo4j {
         if (Play.mode == Mode.DEV) {
             if (bootstrapperDb != null) {
                 bootstrapperDb.stop();
+                bootstrapperDb = null;
             }
         }
         if (graphDb != null) {
             graphDb.shutdown();
+            graphDb = null;
         }
     }
 

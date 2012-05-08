@@ -56,6 +56,20 @@
                 <a href="@{Application.user(colleage.key)}">${colleage.firstname} ${colleage.lastname}</a>&nbsp;
                 <input type="image" src="@{'/public/images/cross.png'}" />
              </form>
+             <ul>
+             #{list items:colleage.colleages, as:'colleage2'}
+                <li>
+                     <a href="@{Application.user(colleage2.key)}">${colleage2.firstname} ${colleage2.lastname}</a>&nbsp;
+                     <ul>
+                         #{list items:colleage2.colleages, as:'colleage3'}
+                             <li>
+                                <a href="@{Application.user(colleage3.key)}">${colleage3.firstname} ${colleage3.lastname}</a>&nbsp;
+                             </li>
+                         #{/list}
+                     </ul>     
+                </li>
+             #{/list}
+             </ul>
         #{/list}
     </li>
     #{/if}
