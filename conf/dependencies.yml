@@ -1,4 +1,4 @@
-self: play -> neo4j 1.0RC
+self: play -> neo4j 1.0
 
 require:
     - play
