@@ -103,15 +103,13 @@ public abstract class Neo4jModel {
 
                 // if node is not null, then we retrieve relation value
                 if (node != null) {
-                    if (!uniqueRelation.lazy()) {
-                        try {
-                            field.set(
-                                    this,
-                                    Neo4jRelationFactory.getModelFromUniqueRelation(uniqueRelation.value(), ""
-                                            + uniqueRelation.direction(), field, node));
-                        } catch (IllegalAccessException e) {
-                            Logger.error(e.getMessage());
-                        }
+                    try {
+                        field.set(
+                                this,
+                                Neo4jRelationFactory.getModelFromUniqueRelation(uniqueRelation.value(), ""
+                                        + uniqueRelation.direction(), field, node));
+                    } catch (IllegalAccessException e) {
+                        Logger.error(e.getMessage());
                     }
                 }
             }

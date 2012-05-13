@@ -185,24 +185,11 @@ public class Neo4jModelEnhancer extends Enhancer {
                             CtMethod ctMethod = ctClass.getDeclaredMethod(getter);
                             ctClass.removeMethod(ctMethod);
                             String code;
-                            if (uniqueRelation.lazy()) {
-                                //@formatter:off
-                                code = "public " + ctField.getType().getName() + " " + getter + "() {" +
-                                                "if(this." + ctField.getName() + " == null){" +
-                                                    "java.lang.reflect.Field field = this.getClass().getField(\"" +ctField.getName() + "\");" +
-                                                    "this." + ctField.getName() + " = (" + ctField.getType().getName() + ") play.modules.neo4j.relationship.Neo4jRelationFactory.getModelFromUniqueRelation(\"" + uniqueRelation.value() + "\", \"" + uniqueRelation.direction() + "\", field, this.node);" +
-                                                "}" +
-                                                 "return (" + ctField.getType().getName() + ")" + ctField.getName() + ";" +
-                                          "}";
-                                //@formatter:on
-                            }
-                            else {
-                                //@formatter:off
-                                code = "public " + ctField.getType().getName() + " " + getter + "() {" +
-                                        "return (" + ctField.getType().getName() + ")" + ctField.getName() + ";" +
-                                       "}";
-                                //@formatter:on
-                            }
+                            //@formatter:off
+                            code = "public " + ctField.getType().getName() + " " + getter + "() {" +
+                                    "return (" + ctField.getType().getName() + ")" + ctField.getName() + ";" +
+                                   "}";
+                            //@formatter:on
                             Logger.debug(code);
                             CtMethod method = CtMethod.make(code, ctClass);
                             ctClass.addMethod(method);

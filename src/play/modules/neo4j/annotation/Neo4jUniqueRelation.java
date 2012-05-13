@@ -29,8 +29,6 @@ public @interface Neo4jUniqueRelation {
 
     String value() default "NEXT";
 
-    boolean lazy() default true;
-
     // active line saving mode for this element (to do an history, a time-line, like for blogs)
     boolean line() default true;
 

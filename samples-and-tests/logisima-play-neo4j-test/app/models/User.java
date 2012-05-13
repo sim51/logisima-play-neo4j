@@ -48,10 +48,10 @@ public class User extends Neo4jModel {
     @Neo4jRelatedTo(value = "IS_A_CLASSMATE")
     public List<User> classmates;
 
-    @Neo4jUniqueRelation(value = "JOB", line = true, lazy = true)
+    @Neo4jUniqueRelation(value = "JOB", line = true)
     public Job        job;
 
-    @Neo4jUniqueRelation(value = "ADDRESS", line = false, lazy = false)
+    @Neo4jUniqueRelation(value = "ADDRESS", line = false)
     public Address    address;
 
     public String toString() {
