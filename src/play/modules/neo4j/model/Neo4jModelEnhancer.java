@@ -35,6 +35,7 @@ import play.classloading.ApplicationClasses.ApplicationClass;
 import play.classloading.enhancers.Enhancer;
 import play.exceptions.UnexpectedException;
 import play.modules.neo4j.annotation.Neo4jRelatedTo;
+import play.modules.neo4j.annotation.Neo4jUniqueRelation;
 
 /**
  * Enhance <code>Neo4jModel</code> to add getter & setter wich are delegate operation to the underlying node (@see
@@ -149,7 +150,8 @@ public class Neo4jModelEnhancer extends Enhancer {
                     // ~~~~~~~~~
                     // GETTER for neo4j relation property 
                     // ~~~~~~~
-                    if(hasNeo4jRelatedAnnotation(ctField)){
+                    if(hasNeo4jRelationAnnotation(ctField)){
+                        // test for related annotation
                         Neo4jRelatedTo relatedTo = getRelatedAnnotation(ctField);
                         if(relatedTo != null){
                             CtMethod ctMethod = ctClass.getDeclaredMethod(getter);
@@ -160,7 +162,7 @@ public class Neo4jModelEnhancer extends Enhancer {
                             code = "public " + ctField.getType().getName() + " " + getter + "() {" +
                                                 "if(this." + ctField.getName() + " == null){" +
                                                     "java.lang.reflect.Field field = this.getClass().getField(\"" +ctField.getName() + "\");" +
-                                                    "this." + ctField.getName() + "=play.modules.neo4j.relationship.Neo4jRelationFactory.getModelsFromRelatedTo(\"" + relatedTo.value() + "\", \"" + relatedTo.direction() + "\", field, this.node);" +
+                                                    "this." + ctField.getName() + "=play.modules.neo4j.relationship.Neo4jRelationFactory.getModelsFromRelation(\"" + relatedTo.value() + "\", \"" + relatedTo.direction() + "\", field, this.node);" +
                                                 "}" +
                                                  "return " + ctField.getName() + ";" +
                                           "}";
@@ -170,6 +172,34 @@ public class Neo4jModelEnhancer extends Enhancer {
                                 //@formatter:off
                                 code = "public " + ctField.getType().getName() + " " + getter + "() {" +
                                             "return " + ctField.getName() + ";" +
+                                       "}";
+                                //@formatter:on
+                            }
+                            Logger.debug(code);
+                            CtMethod method = CtMethod.make(code, ctClass);
+                            ctClass.addMethod(method);
+                        }
+                        // test for unique relation annotation
+                        Neo4jUniqueRelation uniqueRelation = getUniqueRelationAnnotation(ctField);
+                        if (uniqueRelation != null) {
+                            CtMethod ctMethod = ctClass.getDeclaredMethod(getter);
+                            ctClass.removeMethod(ctMethod);
+                            String code;
+                            if (uniqueRelation.lazy()) {
+                                //@formatter:off
+                                code = "public " + ctField.getType().getName() + " " + getter + "() {" +
+                                                "if(this." + ctField.getName() + " == null){" +
+                                                    "java.lang.reflect.Field field = this.getClass().getField(\"" +ctField.getName() + "\");" +
+                                                    "this." + ctField.getName() + " = (" + ctField.getType().getName() + ") play.modules.neo4j.relationship.Neo4jRelationFactory.getModelFromUniqueRelation(\"" + uniqueRelation.value() + "\", \"" + uniqueRelation.direction() + "\", field, this.node);" +
+                                                "}" +
+                                                 "return (" + ctField.getType().getName() + ")" + ctField.getName() + ";" +
+                                          "}";
+                                //@formatter:on
+                            }
+                            else {
+                                //@formatter:off
+                                code = "public " + ctField.getType().getName() + " " + getter + "() {" +
+                                        "return (" + ctField.getType().getName() + ")" + ctField.getName() + ";" +
                                        "}";
                                 //@formatter:on
                             }
@@ -232,7 +262,7 @@ public class Neo4jModelEnhancer extends Enhancer {
                 || ctField.getName().substring(0, 1).equals(ctField.getName().substring(0, 1).toUpperCase())) {
             return false;
         }
-        if (hasNeo4jRelatedAnnotation(ctField)) {
+        if (hasNeo4jRelationAnnotation(ctField)) {
             return false;
         }
         return Modifier.isPublic(ctField.getModifiers()) && !Modifier.isFinal(ctField.getModifiers())
@@ -262,11 +292,12 @@ public class Neo4jModelEnhancer extends Enhancer {
      * @param ctField
      * @return
      */
-    private boolean hasNeo4jRelatedAnnotation(CtField ctField) {
+    private boolean hasNeo4jRelationAnnotation(CtField ctField) {
         for (Object info : ctField.getAvailableAnnotations()) {
             String annotationName = info.toString();
             if (annotationName.startsWith("@play.modules.neo4j.annotation.Neo4jRelatedTo")
-                    || annotationName.startsWith("@play.modules.neo4j.annotation.Neo4jRelatedToVia")) {
+                    || annotationName.startsWith("@play.modules.neo4j.annotation.Neo4jRelatedToVia")
+                    || annotationName.startsWith("@play.modules.neo4j.annotation.Neo4jUniqueRelation")) {
                 return true;
             }
 
@@ -284,6 +315,21 @@ public class Neo4jModelEnhancer extends Enhancer {
         for (Object annotation : ctField.getAvailableAnnotations()) {
             if (annotation.toString().startsWith("@play.modules.neo4j.annotation.Neo4jRelatedTo(")) {
                 return (Neo4jRelatedTo) annotation;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return the neo4jUniqueRelation annotation of a field if exist, null otherwise.
+     * 
+     * @param ctField
+     * @return
+     */
+    private Neo4jUniqueRelation getUniqueRelationAnnotation(CtField ctField) {
+        for (Object annotation : ctField.getAvailableAnnotations()) {
+            if (annotation.toString().startsWith("@play.modules.neo4j.annotation.Neo4jUniqueRelation(")) {
+                return (Neo4jUniqueRelation) annotation;
             }
         }
         return null;

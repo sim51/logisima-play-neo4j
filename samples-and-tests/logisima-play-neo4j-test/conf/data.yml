@@ -39,6 +39,18 @@ User(User_4):
  devScore: '2531'
  birthday: '@@Date@@390002400000'
  avatar: '@@File@@273eb3d6-1d35-4201-842b-9e4af74b7ecf|image/png'
+ 
+Job(Job_1):
+ title: 'My last job'
+
+Job(Job_2):
+ title: 'My last-1 job'
+
+Job(Job_3):
+ title: 'My last-2 job'
+ 
+Address(Address_1):
+ title: 'My address'
 
 Relation(49):
  type: IS_A_CLASSMATE
@@ -59,3 +71,23 @@ Relation(46):
  type: IS_FAMILLY
  from: User_2
  to: User_1
+ 
+Relation(47):
+ type: JOB
+ from: User_2
+ to: Job_1
+
+Relation(48):
+ type: NEXT
+ from: Job_1
+ to: Job_2
+
+Relation(49):
+ type: NEXT
+ from: Job_2
+ to: Job_3
+ 
+Relation(50):
+ type: ADDRESS
+ from: User_2
+ to: Address_1

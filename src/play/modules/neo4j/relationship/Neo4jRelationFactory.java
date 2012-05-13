@@ -1,3 +1,21 @@
+/**
+ * This file is part of logisima-play-neo4j.
+ *
+ * logisima-play-neo4j is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * logisima-play-neo4j is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with logisima-play-neo4j. If not, see <http://www.gnu.org/licenses/>.
+ * 
+ * @See https://github.com/sim51/logisima-play-neo4j
+ */
 package play.modules.neo4j.relationship;
 
 import java.lang.reflect.Field;
@@ -14,7 +32,17 @@ import play.modules.neo4j.model.Neo4jModel;
 
 public class Neo4jRelationFactory {
 
-    public static <T extends Neo4jModel> List<T> getModelsFromRelatedTo(String relationName, String direction,
+    /**
+     * Method to get items represented by field <code>field</code> that have a relationship of type
+     * <code>relationName</code> with direction <code>direction</code> on the node <code>node</code>.
+     * 
+     * @param relationName
+     * @param direction
+     * @param field
+     * @param node
+     * @return
+     */
+    public static <T extends Neo4jModel> List<T> getModelsFromRelation(String relationName, String direction,
             Field field, Node node) {
         // construction of the return type
         List<T> list = new ArrayList();
@@ -36,5 +64,36 @@ public class Neo4jRelationFactory {
             throw new Neo4jPlayException(e);
         }
         return list;
+    }
+
+    /**
+     * Method to get item represented by field <code>field</code> that has a relationship of type
+     * <code>relationName</code> with direction <code>direction</code> on the node <code>node</code>.
+     * 
+     * @param relationName
+     * @param direction
+     * @param field
+     * @param node
+     * @return
+     */
+    public static <T extends Neo4jModel> T getModelFromUniqueRelation(String relationName, String direction,
+            Field field, Node node) {
+        T nodeWrapper = null;
+        try {
+            if (Neo4jModel.class.isAssignableFrom(field.getType())) {
+                Relationship relation = node.getSingleRelationship(DynamicRelationshipType.withName(relationName),
+                        Direction.valueOf(direction));
+                if (relation != null) {
+                    Node item = relation.getEndNode();
+                    nodeWrapper = Neo4jModel.getByNode(item);
+                }
+            }
+            else {
+                throw new Neo4jPlayException("Field with 'Neo4jUniqueRelation' annotation must be a Neo4jModel");
+            }
+        } catch (Exception e) {
+            throw new Neo4jPlayException(e);
+        }
+        return nodeWrapper;
     }
 }

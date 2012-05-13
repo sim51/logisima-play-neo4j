@@ -172,19 +172,24 @@ public class Binder {
      */
     public static Object bindToNeo4jFormat(Object value, Class type) {
         try {
-            if (type.isAssignableFrom(Date.class)) {
-                Date date = (Date) value;
-                String neo4jValue = "@@Date@@" + date.getTime();
-                return neo4jValue;
-            }
-            else if (type.isAssignableFrom(Blob.class)) {
-                Blob blob = (Blob) value;
-                String format = blob.type();
-                String uuid = blob.getFile().getName();
-                return "@@File@@" + uuid + "|" + format;
+            if (value == null) {
+                return null;
             }
             else {
-                return value;
+                if (type.isAssignableFrom(Date.class)) {
+                    Date date = (Date) value;
+                    String neo4jValue = "@@Date@@" + date.getTime();
+                    return neo4jValue;
+                }
+                else if (type.isAssignableFrom(Blob.class)) {
+                    Blob blob = (Blob) value;
+                    String format = blob.type();
+                    String uuid = blob.getFile().getName();
+                    return "@@File@@" + uuid + "|" + format;
+                }
+                else {
+                    return value;
+                }
             }
         } catch (Exception e) {
             throw new Neo4jPlayException(e);

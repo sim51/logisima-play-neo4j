@@ -19,6 +19,7 @@
 package play.modules.neo4j.model;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -41,8 +42,10 @@ import org.neo4j.helpers.collection.MapUtil;
 import play.Logger;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.annotation.Neo4jRelatedTo;
+import play.modules.neo4j.annotation.Neo4jUniqueRelation;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
+import play.modules.neo4j.relationship.Neo4jRelationFactory;
 import play.modules.neo4j.util.Neo4j;
 import play.modules.neo4j.util.Neo4jUtils;
 
@@ -167,7 +170,7 @@ public class Neo4jFactory {
         }
 
         try {
-            // if is a new object (doesn't have a node value), we create the node & generate an auto key
+            // if it's a new object (doesn't have a node value), we create the node & generate an auto key
             if (isNewNode) {
                 nodeWrapper.setKey(getNextId());
                 nodeWrapper.setNode(Neo4j.db().createNode());
@@ -176,72 +179,188 @@ public class Neo4jFactory {
             // setting properties node and stock oldValue into an hashmap for indexes
             for (java.lang.reflect.Field field : nodeWrapper.getClass().getFields()) {
                 if (!field.getName().equals("node") && !field.getName().equals("shouldBeSave")
-                        && field.get(nodeWrapper) != null) {
+                        && !field.getName().equals("$toString0")) {
 
                     // it's a classic attribute
-                    if (!field.isAnnotationPresent(Neo4jRelatedTo.class)) {
+                    if (!field.isAnnotationPresent(Neo4jRelatedTo.class)
+                            && !field.isAnnotationPresent(Neo4jUniqueRelation.class)) {
                         Object oldValue = nodeWrapper.getNode().getProperty(field.getName(), null);
                         if (oldValue != null) {
                             oldValues.put(field.getName(), oldValue);
                         }
-                        nodeWrapper.getNode().setProperty(
-                                field.getName(),
-                                play.modules.neo4j.util.Binder.bindToNeo4jFormat(field.get(nodeWrapper),
-                                        field.getType()));
+                        if (field.get(nodeWrapper) != null) {
+                            nodeWrapper.getNode().setProperty(
+                                    field.getName(),
+                                    play.modules.neo4j.util.Binder.bindToNeo4jFormat(field.get(nodeWrapper),
+                                            field.getType()));
+                        }
+                        else {
+                            nodeWrapper.getNode().removeProperty(field.getName());
+                        }
                     }
                     // it's a relation
                     else {
+                        // RelatedTo annotation
+                        if (field.isAnnotationPresent(Neo4jRelatedTo.class) && field.get(nodeWrapper) != null) {
+                            // we retrive annotation value
+                            Neo4jRelatedTo neo4jRelatedTo = field.getAnnotation(Neo4jRelatedTo.class);
+                            Direction relationDirection = Direction.valueOf(neo4jRelatedTo.direction());
+                            RelationshipType relationType = DynamicRelationshipType.withName(neo4jRelatedTo.value());
 
-                        // we retrive annotation value
-                        Neo4jRelatedTo neo4jRelatedTo = field.getAnnotation(Neo4jRelatedTo.class);
-                        Direction relationDirection = Direction.valueOf(neo4jRelatedTo.direction());
-                        RelationshipType relationType = DynamicRelationshipType.withName(neo4jRelatedTo.value());
-
-                        // construct an hasmap of database relation from node with begin node / relation format.
-                        Map<String, Relationship> dbMapRelations = new HashMap<String, Relationship>();
-                        Iterable<Relationship> dbNodeRlation = nodeWrapper.getNode().getRelationships(
-                                relationDirection, relationType);
-                        for (Relationship relation : dbNodeRlation) {
-                            dbMapRelations.put(relation.getStartNode().getId() + "@" + relation.getEndNode().getId(),
-                                    relation);
-                        }
-                        // this map is the stack where relation are store and remove to khnow wich are to add or deleted
-                        // !
-                        Map<String, Relationship> dbMapRelationsStack = new TreeMap(dbMapRelations);
-
-                        // for all node in this node relation, we look if it is in the map
-                        List<Neo4jModel> relations = (List) field.get(nodeWrapper);
-                        for (Neo4jModel related : relations) {
-                            // looking for start node (that's why Neo4jRelatedTo can't have "BOTH" value for direction).
-                            Node startNode;
-                            Node endNode;
-                            if (relationDirection.equals(Direction.INCOMING)) {
-                                startNode = related.node;
-                                endNode = nodeWrapper.getNode();
+                            // construct an hasmap of database relation from node with begin node / relation format.
+                            Map<String, Relationship> dbMapRelations = new HashMap<String, Relationship>();
+                            Iterable<Relationship> dbNodeRlation = nodeWrapper.getNode().getRelationships(
+                                    relationDirection, relationType);
+                            for (Relationship relation : dbNodeRlation) {
+                                dbMapRelations.put(relation.getStartNode().getId() + "@"
+                                        + relation.getEndNode().getId(), relation);
                             }
-                            else {
-                                startNode = nodeWrapper.getNode();
-                                endNode = related.node;
+                            // this map is the stack where relation are store and remove to khnow wich are to add or
+                            // deleted
+                            // !
+                            Map<String, Relationship> dbMapRelationsStack = new TreeMap(dbMapRelations);
+
+                            // for all node in this node relation, we look if it is in the map
+                            List<Neo4jModel> relations = (List) field.get(nodeWrapper);
+                            for (Neo4jModel related : relations) {
+                                if (related.shouldBeSave) {
+                                    throw new Neo4jPlayException(
+                                            "You have to 'save' all related model, before to 'save' parent model");
+                                }
+                                // looking for start node (that's why Neo4jRelatedTo can't have "BOTH" value for
+                                // direction).
+                                Node startNode;
+                                Node endNode;
+                                if (relationDirection.equals(Direction.INCOMING)) {
+                                    startNode = related.node;
+                                    endNode = nodeWrapper.getNode();
+                                }
+                                else {
+                                    startNode = nodeWrapper.getNode();
+                                    endNode = related.node;
+                                }
+
+                                // if dbMap has startNode, then it's OK, nothing to do
+                                if (dbMapRelationsStack.containsKey(startNode.getId() + "@" + endNode.getId())) {
+                                    dbMapRelationsStack.remove(startNode.getId() + "@" + endNode.getId());
+                                }
+                                // startNode is not in dbMap so we add it !
+                                else {
+                                    // Here we do a test if this relation is already in database (this due to the list
+                                    // where
+                                    // we can add the same object more than one times ...)
+                                    if (!dbMapRelations.containsKey(startNode.getId() + "@" + endNode.getId())) {
+                                        startNode.createRelationshipTo(endNode, relationType);
+                                    }
+                                }
                             }
 
-                            // if dbMap has startNode, then it's OK, nothing to do
-                            if (dbMapRelationsStack.containsKey(startNode.getId() + "@" + endNode.getId())) {
-                                dbMapRelationsStack.remove(startNode.getId() + "@" + endNode.getId());
-                            }
-                            // startNode is not in dbMap so we add it !
-                            else {
-                                // Here we do a test if this relation is already in database (this due to the list where
-                                // we can add the same object more than one times ...)
-                                if (!dbMapRelations.containsKey(startNode.getId() + "@" + endNode.getId())) {
-                                    startNode.createRelationshipTo(endNode, relationType);
+                            // if dbMap still contain data, we have to deleted some relations !
+                            if (dbMapRelationsStack.size() != 0) {
+                                for (Relationship relation : dbMapRelationsStack.values()) {
+                                    relation.delete();
                                 }
                             }
                         }
 
-                        // if dbMap still contain data, we have to deleted some relations !
-                        if (dbMapRelationsStack.size() != 0) {
-                            for (Relationship relation : dbMapRelationsStack.values()) {
-                                relation.delete();
+                        // UniqueRelation annotation
+                        if (field.isAnnotationPresent(Neo4jUniqueRelation.class)) {
+                            // we retrive annotation value
+                            Neo4jUniqueRelation neo4jUnique = field.getAnnotation(Neo4jUniqueRelation.class);
+                            Direction relationDirection = Direction.valueOf(neo4jUnique.direction());
+                            RelationshipType relationType = DynamicRelationshipType.withName(neo4jUnique.value());
+                            // get GETTER method
+                            String propertyName = field.getName().substring(0, 1).toUpperCase()
+                                    + field.getName().substring(1);
+                            String getterName = "get" + propertyName;
+                            Method getter = nodeWrapper.getClass().getMethod(getterName);
+                            // the current value of the field
+                            Neo4jModel current = (Neo4jModel) getter.invoke(nodeWrapper);
+                            // the previous value of the field
+                            Neo4jModel previous = Neo4jRelationFactory.getModelFromUniqueRelation(neo4jUnique.value(),
+                                    neo4jUnique.direction(), field, nodeWrapper.node);
+
+                            if (current != null && current.shouldBeSave) {
+                                throw new Neo4jPlayException(
+                                        "You have to 'save' all related model, before to 'save' parent model");
+                            }
+
+                            // first we look if there is a change !
+                            if ((current != null && previous != null && current.node.getId() != previous.node.getId())
+                                    | !(current == null && previous == null)) {
+                                Node startNode;
+                                Node endNode;
+                                // if previous is null : simple add
+                                if (previous == null) {
+                                    if (relationDirection.equals(Direction.INCOMING)) {
+                                        createRelationship(current.node, nodeWrapper.getNode(), relationType);
+                                    }
+                                    else {
+                                        createRelationship(nodeWrapper.getNode(), current.node, relationType);
+                                    }
+                                }
+                                else {
+                                    // if current is null => deletion
+                                    if (current == null) {
+                                        if (neo4jUnique.line()) {
+                                            throw new Neo4jException(
+                                                    "You can't have a null value when line mode is activated. If you want to delete the chain, you have to do it item by item !");
+                                        }
+                                        else {
+                                            Relationship relation = nodeWrapper.node.getSingleRelationship(
+                                                    relationType, relationDirection);
+                                            relation.delete();
+                                            // TODO : Delete node if there is no relation ?
+                                            // previous.node.delete();
+                                        }
+                                    }
+                                    // else
+                                    else {
+                                        if (neo4jUnique.line()) {
+                                            if (relationDirection.equals(Direction.INCOMING)) {
+                                                Relationship relation = nodeWrapper.getNode().getSingleRelationship(
+                                                        relationType, relationDirection);
+                                                relation.delete();
+                                                createRelationship(current.getNode(), nodeWrapper.getNode(),
+                                                        relationType);
+                                                RelationshipType nextRelationType = DynamicRelationshipType
+                                                        .withName(neo4jUnique.value() + "_NEXT");
+                                                createRelationship(previous.getNode(), current.getNode(),
+                                                        nextRelationType);
+
+                                                createRelationship(current.getNode(), nodeWrapper.getNode(),
+                                                        relationType);
+                                            }
+                                            else {
+                                                Relationship relation = nodeWrapper.getNode().getSingleRelationship(
+                                                        relationType, relationDirection);
+                                                relation.delete();
+                                                createRelationship(nodeWrapper.getNode(), current.getNode(),
+                                                        relationType);
+                                                RelationshipType nextRelationType = DynamicRelationshipType
+                                                        .withName(neo4jUnique.value() + "_NEXT");
+                                                createRelationship(current.getNode(), previous.getNode(),
+                                                        nextRelationType);
+                                            }
+                                        }
+                                        else {
+                                            Relationship relation = nodeWrapper.getNode().getSingleRelationship(
+                                                    relationType, relationDirection);
+                                            relation.delete();
+                                            // TODO : Delete node if there is no relation ?
+                                            // previous.node.delete();
+                                            if (relationDirection.equals(Direction.INCOMING)) {
+                                                createRelationship(current.getNode(), nodeWrapper.getNode(),
+                                                        relationType);
+                                            }
+                                            else {
+                                                createRelationship(nodeWrapper.getNode(), current.getNode(),
+                                                        relationType);
+                                            }
+                                        }
+
+                                    }
+                                }
                             }
                         }
                     }
@@ -262,9 +381,7 @@ public class Neo4jFactory {
             }
 
             tx.success();
-        } catch (IllegalArgumentException e) {
-            throw new Neo4jException(e);
-        } catch (IllegalAccessException e) {
+        } catch (Exception e) {
             throw new Neo4jException(e);
         } finally {
             tx.finish();
@@ -410,6 +527,10 @@ public class Neo4jFactory {
             tx.finish();
         }
         return counter;
+    }
+
+    private void createRelationship(Node start, Node end, RelationshipType relationType) {
+        start.createRelationshipTo(end, relationType);
     }
 
 }

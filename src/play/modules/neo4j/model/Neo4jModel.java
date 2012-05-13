@@ -32,6 +32,7 @@ import play.Logger;
 import play.Play;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.annotation.Neo4jRelatedTo;
+import play.modules.neo4j.annotation.Neo4jUniqueRelation;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.relationship.Neo4jRelationFactory;
@@ -68,7 +69,6 @@ public abstract class Neo4jModel {
      */
     public Neo4jModel() {
         this.shouldBeSave = Boolean.FALSE;
-        initializeRelations();
     }
 
     /**
@@ -77,9 +77,9 @@ public abstract class Neo4jModel {
     private void initializeRelations() {
         // for all field, we look at it to see if there are some Related annotation
         for (java.lang.reflect.Field field : this.getClass().getFields()) {
-            Neo4jRelatedTo relatedTo = field.getAnnotation(Neo4jRelatedTo.class);
 
             // if there is the relation annotation
+            Neo4jRelatedTo relatedTo = field.getAnnotation(Neo4jRelatedTo.class);
             if (relatedTo != null) {
 
                 // if node is not null, then we retrieve relation value
@@ -88,8 +88,27 @@ public abstract class Neo4jModel {
                         try {
                             field.set(
                                     this,
-                                    Neo4jRelationFactory.getModelsFromRelatedTo(relatedTo.value(),
+                                    Neo4jRelationFactory.getModelsFromRelation(relatedTo.value(),
                                             "" + relatedTo.direction(), field, node));
+                        } catch (IllegalAccessException e) {
+                            Logger.error(e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            // if there is the unique relation annotation
+            Neo4jUniqueRelation uniqueRelation = field.getAnnotation(Neo4jUniqueRelation.class);
+            if (uniqueRelation != null) {
+
+                // if node is not null, then we retrieve relation value
+                if (node != null) {
+                    if (!uniqueRelation.lazy()) {
+                        try {
+                            field.set(
+                                    this,
+                                    Neo4jRelationFactory.getModelFromUniqueRelation(uniqueRelation.value(), ""
+                                            + uniqueRelation.direction(), field, node));
                         } catch (IllegalAccessException e) {
                             Logger.error(e.getMessage());
                         }
@@ -137,6 +156,7 @@ public abstract class Neo4jModel {
     public void setNode(Node node) {
         this.node = node;
         this.shouldBeSave = Boolean.FALSE;
+        this.initializeRelations();
     }
 
     /**
@@ -295,7 +315,6 @@ public abstract class Neo4jModel {
             // getting settter for node
             Method setNode = clazz.getMethod("setNode", Node.class);
             setNode.invoke(nodeWrapper, node);
-            nodeWrapper.initializeRelations();
         } catch (Exception e) {
             throw new Neo4jException(e);
         }
