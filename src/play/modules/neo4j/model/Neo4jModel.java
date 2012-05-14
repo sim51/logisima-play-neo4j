@@ -158,6 +158,15 @@ public abstract class Neo4jModel {
     }
 
     /**
+     * Setter for node with no initialisation.
+     * 
+     * @param node
+     */
+    protected void setNodeWithNoInit(Node node) {
+        this.node = node;
+    }
+
+    /**
      * @return the shouldBeSave
      */
     public Boolean getShouldBeSave() {

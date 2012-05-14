@@ -133,7 +133,7 @@ public class Neo4jModelEnhancer extends Enhancer {
                         }
                     } catch (NotFoundException noSetter) {
                         // create setter
-                        Logger.debug("Adding setter " + getter + " for class " + entityName);
+                        Logger.debug("Adding setter " + setter + " for class " + entityName);
                         //@formatter:off
                         String code = "public void " + setter + "(" + ctField.getType().getName() + " value) { " +
                                             "this." + ctField.getName() + " = value;" +

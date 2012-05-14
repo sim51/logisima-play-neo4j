@@ -173,7 +173,7 @@ public class Neo4jFactory {
             // if it's a new object (doesn't have a node value), we create the node & generate an auto key
             if (isNewNode) {
                 nodeWrapper.setKey(getNextId());
-                nodeWrapper.setNode(Neo4j.db().createNode());
+                nodeWrapper.setNodeWithNoInit(Neo4j.db().createNode());
             }
 
             // setting properties node and stock oldValue into an hashmap for indexes
@@ -188,11 +188,15 @@ public class Neo4jFactory {
                         if (oldValue != null) {
                             oldValues.put(field.getName(), oldValue);
                         }
-                        if (field.get(nodeWrapper) != null) {
-                            nodeWrapper.getNode().setProperty(
-                                    field.getName(),
-                                    play.modules.neo4j.util.Binder.bindToNeo4jFormat(field.get(nodeWrapper),
-                                            field.getType()));
+                        // get GETTER method
+                        String propertyName = field.getName().substring(0, 1).toUpperCase()
+                                + field.getName().substring(1);
+                        String getterName = "get" + propertyName;
+                        Method getter = nodeWrapper.getClass().getMethod(getterName);
+                        Object value = getter.invoke(nodeWrapper);
+                        if (value != null) {
+                            nodeWrapper.getNode().setProperty(field.getName(),
+                                    play.modules.neo4j.util.Binder.bindToNeo4jFormat(value, field.getType()));
                         }
                         else {
                             nodeWrapper.getNode().removeProperty(field.getName());
@@ -302,7 +306,12 @@ public class Neo4jFactory {
                                 else {
                                     // if current is null => deletion
                                     if (current == null) {
-                                        if (neo4jUnique.line()) {
+                                        if (neo4jUnique.line()
+                                                && previous.node
+                                                        .getRelationships(
+                                                                relationDirection,
+                                                                DynamicRelationshipType.withName(neo4jUnique.value()
+                                                                        + "_NEXT")).iterator().hasNext()) {
                                             throw new Neo4jException(
                                                     "You can't have a null value when line mode is activated. If you want to delete the chain, you have to do it item by item !");
                                         }
