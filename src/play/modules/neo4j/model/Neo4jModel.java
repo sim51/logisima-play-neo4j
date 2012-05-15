@@ -77,7 +77,7 @@ public abstract class Neo4jModel {
     private void initializeRelations() {
         // for all field, we look at it to see if there are some Related annotation
         for (java.lang.reflect.Field field : this.getClass().getFields()) {
-
+            Logger.debug("Loading sub-node " + field.getName() + " for node " + this.node.getId());
             // if there is the relation annotation
             Neo4jRelatedTo relatedTo = field.getAnnotation(Neo4jRelatedTo.class);
             if (relatedTo != null) {

@@ -73,17 +73,17 @@ Relation(46):
  to: User_1
  
 Relation(47):
- type: JOB
+ type: NEXT_JOB
  from: User_2
  to: Job_1
 
 Relation(48):
- type: NEXT
+ type: NEXT_JOB
  from: Job_1
  to: Job_2
 
 Relation(49):
- type: NEXT
+ type: NEXT_JOB
  from: Job_2
  to: Job_3
  

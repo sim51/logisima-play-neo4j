@@ -290,8 +290,11 @@ public class Neo4jFactory {
                             }
 
                             // first we look if there is a change !
-                            if ((current != null && previous != null && current.node.getId() != previous.node.getId())
-                                    | !(current == null && previous == null)) {
+                            // if not both are null
+                            // if not both have value and have same id
+                            //
+                            if (!((current != null && previous != null) && current.node.getId() == previous.node
+                                    .getId()) && !(current == null && previous == null)) {
                                 Node startNode;
                                 Node endNode;
                                 // if previous is null : simple add
@@ -307,11 +310,8 @@ public class Neo4jFactory {
                                     // if current is null => deletion
                                     if (current == null) {
                                         if (neo4jUnique.line()
-                                                && previous.node
-                                                        .getRelationships(
-                                                                relationDirection,
-                                                                DynamicRelationshipType.withName(neo4jUnique.value()
-                                                                        + "_NEXT")).iterator().hasNext()) {
+                                                && previous.node.getRelationships(relationDirection, relationType)
+                                                        .iterator().hasNext()) {
                                             throw new Neo4jException(
                                                     "You can't have a null value when line mode is activated. If you want to delete the chain, you have to do it item by item !");
                                         }
@@ -332,13 +332,7 @@ public class Neo4jFactory {
                                                 relation.delete();
                                                 createRelationship(current.getNode(), nodeWrapper.getNode(),
                                                         relationType);
-                                                RelationshipType nextRelationType = DynamicRelationshipType
-                                                        .withName(neo4jUnique.value() + "_NEXT");
-                                                createRelationship(previous.getNode(), current.getNode(),
-                                                        nextRelationType);
-
-                                                createRelationship(current.getNode(), nodeWrapper.getNode(),
-                                                        relationType);
+                                                createRelationship(previous.getNode(), current.getNode(), relationType);
                                             }
                                             else {
                                                 Relationship relation = nodeWrapper.getNode().getSingleRelationship(
@@ -346,10 +340,7 @@ public class Neo4jFactory {
                                                 relation.delete();
                                                 createRelationship(nodeWrapper.getNode(), current.getNode(),
                                                         relationType);
-                                                RelationshipType nextRelationType = DynamicRelationshipType
-                                                        .withName(neo4jUnique.value() + "_NEXT");
-                                                createRelationship(current.getNode(), previous.getNode(),
-                                                        nextRelationType);
+                                                createRelationship(current.getNode(), previous.getNode(), relationType);
                                             }
                                         }
                                         else {

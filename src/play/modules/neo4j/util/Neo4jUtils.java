@@ -50,7 +50,7 @@ public class Neo4jUtils {
             if (startNode.hasProperty(Neo4jFactory.NODE_KEY_COUNTER)
                     && startNode.hasProperty(Neo4jFactory.NODE_CLASS_NAME)) {
                 String className = (String) startNode.getProperty(Neo4jFactory.NODE_CLASS_NAME);
-                Logger.debug("Node model class name is " + className);
+                Logger.debug("Model class name is " + className + " for node " + node.getId());
                 Class clazz = Play.classes.getApplicationClass(className).javaClass;
                 return clazz;
             }
