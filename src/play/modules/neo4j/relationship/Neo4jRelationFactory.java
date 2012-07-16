@@ -27,7 +27,6 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-import play.Logger;
 import play.modules.neo4j.exception.Neo4jPlayException;
 import play.modules.neo4j.model.Neo4jModel;
 
@@ -53,7 +52,13 @@ public class Neo4jRelationFactory {
                         .iterator();
                 for (Relationship relation : node.getRelationships(Direction.valueOf(direction),
                         DynamicRelationshipType.withName(relationName))) {
-                    Node item = relation.getEndNode();
+                    Node item = null;
+                    if (direction.equalsIgnoreCase("OUTGOING")) {
+                        item = relation.getEndNode();
+                    }
+                    else {
+                        item = relation.getStartNode();
+                    }
                     T nodeWrapper = Neo4jModel.getByNode(item);
                     list.add(nodeWrapper);
                 }
@@ -85,7 +90,13 @@ public class Neo4jRelationFactory {
                 for (Relationship relation : node.getRelationships(DynamicRelationshipType.withName(relationName),
                         Direction.valueOf(direction))) {
                     if (nodeWrapper == null) {
-                        Node item = relation.getEndNode();
+                        Node item = null;
+                        if (direction.equalsIgnoreCase("OUTGOING")) {
+                            item = relation.getEndNode();
+                        }
+                        else {
+                            item = relation.getStartNode();
+                        }
                         nodeWrapper = Neo4jModel.getByNode(item);
                         Logger.debug("Loading neo4j single '" + relation.getType().name() + "-" + relation.getId()
                                 + "' (" + direction + ") node for node " + node.getId());
