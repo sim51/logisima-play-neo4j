@@ -1,4 +1,4 @@
-self: play -> neo4j 1.0
+self: play -> neo4j 1.0.2
 
 require:
     - play
