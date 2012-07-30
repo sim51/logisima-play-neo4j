@@ -47,28 +47,30 @@ public class Neo4jRelationFactory {
             Field field, Node node) {
         // construction of the return type
         List<T> list = new ArrayList();
-        try {
-            if (field.getType().isAssignableFrom(List.class)) {
-                node.getRelationships(Direction.valueOf(direction), DynamicRelationshipType.withName(relationName))
-                        .iterator();
-                for (Relationship relation : node.getRelationships(Direction.valueOf(direction),
-                        DynamicRelationshipType.withName(relationName))) {
-                    Node item = null;
-                    if (direction.equalsIgnoreCase("OUTGOING")) {
-                        item = relation.getEndNode();
+        if (node != null) {
+            try {
+                if (field.getType().isAssignableFrom(List.class)) {
+                    node.getRelationships(Direction.valueOf(direction), DynamicRelationshipType.withName(relationName))
+                            .iterator();
+                    for (Relationship relation : node.getRelationships(Direction.valueOf(direction),
+                            DynamicRelationshipType.withName(relationName))) {
+                        Node item = null;
+                        if (direction.equalsIgnoreCase("OUTGOING")) {
+                            item = relation.getEndNode();
+                        }
+                        else {
+                            item = relation.getStartNode();
+                        }
+                        T nodeWrapper = Neo4jModel.getByNode(item);
+                        list.add(nodeWrapper);
                     }
-                    else {
-                        item = relation.getStartNode();
-                    }
-                    T nodeWrapper = Neo4jModel.getByNode(item);
-                    list.add(nodeWrapper);
                 }
+                else {
+                    throw new Neo4jPlayException("Field with 'Neo4jRelatedTo' annotation must be a List");
+                }
+            } catch (Exception e) {
+                throw new Neo4jPlayException(e);
             }
-            else {
-                throw new Neo4jPlayException("Field with 'Neo4jRelatedTo' annotation must be a List");
-            }
-        } catch (Exception e) {
-            throw new Neo4jPlayException(e);
         }
         return list;
     }
