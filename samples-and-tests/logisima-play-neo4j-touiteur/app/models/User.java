@@ -41,10 +41,10 @@ public class User extends Neo4jModel {
 
     public Blob       avatar;
 
-    @Neo4jRelatedTo(value = "IS_FRIEND", direction = "OUTGOING", lazy = true)
+    @Neo4jRelatedTo(value = "IS_FRIEND", direction = Direction.OUTGOING, lazy = true)
     public List<User> friends;
 
-    @Neo4jRelatedTo(value = "IS_FRIEND", direction = "INCOMING", lazy = true)
+    @Neo4jRelatedTo(value = "IS_FRIEND", direction = Direction.INCOMING, lazy = true)
     public List<User> followers;
 
     public String toString() {

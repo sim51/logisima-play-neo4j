@@ -43,24 +43,18 @@ public class Neo4jRelationFactory {
      * @param node
      * @return
      */
-    public static <T extends Neo4jModel> List<T> getModelsFromRelation(String relationName, String direction,
+    public static <T extends Neo4jModel> List<T> getModelsFromRelation(String relationName, Direction direction,
             Field field, Node node) {
         // construction of the return type
         List<T> list = new ArrayList();
         if (node != null) {
             try {
                 if (field.getType().isAssignableFrom(List.class)) {
-                    node.getRelationships(Direction.valueOf(direction), DynamicRelationshipType.withName(relationName))
+                    node.getRelationships(direction, DynamicRelationshipType.withName(relationName))
                             .iterator();
-                    for (Relationship relation : node.getRelationships(Direction.valueOf(direction),
+                    for (Relationship relation : node.getRelationships(direction,
                             DynamicRelationshipType.withName(relationName))) {
-                        Node item = null;
-                        if (direction.equalsIgnoreCase("OUTGOING")) {
-                            item = relation.getEndNode();
-                        }
-                        else {
-                            item = relation.getStartNode();
-                        }
+                        Node item = relation.getOtherNode(node);
                         T nodeWrapper = Neo4jModel.getByNode(item);
                         list.add(nodeWrapper);
                     }
@@ -85,21 +79,15 @@ public class Neo4jRelationFactory {
      * @param node
      * @return
      */
-    public static <T extends Neo4jModel> T getModelFromUniqueRelation(String relationName, String direction,
+    public static <T extends Neo4jModel> T getModelFromUniqueRelation(String relationName, Direction direction,
             Field field, Node node) {
         T nodeWrapper = null;
         try {
             if (Neo4jModel.class.isAssignableFrom(field.getType())) {
                 for (Relationship relation : node.getRelationships(DynamicRelationshipType.withName(relationName),
-                        Direction.valueOf(direction))) {
+                        direction)) {
                     if (nodeWrapper == null) {
-                        Node item = null;
-                        if (direction.equalsIgnoreCase("OUTGOING")) {
-                            item = relation.getEndNode();
-                        }
-                        else {
-                            item = relation.getStartNode();
-                        }
+                        Node item = relation.getOtherNode(node);
                         nodeWrapper = Neo4jModel.getByNode(item);
                         Logger.debug("Loading neo4j single '" + relation.getType().name() + "-" + relation.getId()
                                 + "' (" + direction + ") node for node " + node.getId());

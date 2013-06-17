@@ -89,7 +89,7 @@ public abstract class Neo4jModel {
                             field.set(
                                     this,
                                     Neo4jRelationFactory.getModelsFromRelation(relatedTo.value(),
-                                            "" + relatedTo.direction(), field, node));
+                                            relatedTo.direction(), field, node));
                         } catch (IllegalAccessException e) {
                             Logger.error(e.getMessage());
                         }
@@ -106,8 +106,8 @@ public abstract class Neo4jModel {
                     try {
                         field.set(
                                 this,
-                                Neo4jRelationFactory.getModelFromUniqueRelation(uniqueRelation.value(), ""
-                                        + uniqueRelation.direction(), field, node));
+                                Neo4jRelationFactory.getModelFromUniqueRelation(uniqueRelation.value(),
+                                        uniqueRelation.direction(), field, node));
                     } catch (IllegalAccessException e) {
                         Logger.error(e.getMessage());
                     }
