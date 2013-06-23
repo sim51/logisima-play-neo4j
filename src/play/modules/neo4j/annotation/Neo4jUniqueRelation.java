@@ -34,5 +34,5 @@ public @interface Neo4jUniqueRelation {
     // active line saving mode for this element (to do an history, a time-line, like for blogs)
     boolean line() default true;
 
-    Direction direction() default Direction.BOTH;
+    Direction direction() default Direction.OUTGOING;
 }

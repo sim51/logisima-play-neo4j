@@ -109,7 +109,7 @@ With Neo4jRelatedTo annotation, you can also defined some attributes :
 </p> 
 <ul>
     <li><strong>lazy :</strong> like hibernate, you can do lazy loading for relation. By default, it's value is "true" to avoid circular reference and avoid loop that produce "Java Heap Space".</li>
-    <li><strong>direction :</strong>to specified the direction of the relation. By default, it's "OUTGOING", but you can change it to "INCOMING". Direction "BOTH is not implemented !!!</li>
+    <li><strong>direction :</strong>to specified the direction of the relation. By default, it's OUTGOING, but you can change it to INCOMING or BOTH.</li>
 </ul>
 
 

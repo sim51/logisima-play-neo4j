@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-
-<testsuite failures="0" time="0.586" errors="0" skipped="0" tests="1" name="play.module.neo4j.FixturesTest">
-  <testcase classname="play.module.neo4j.FixturesTest" name="importYmlTest" time="0.586">
-      </testcase>
-</testsuite>

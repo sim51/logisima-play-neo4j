@@ -42,7 +42,6 @@ import play.modules.neo4j.annotation.Neo4jUniqueRelation;
  * Neo4jModel.class).
  * 
  * @author bsimard
- * 
  */
 public class Neo4jModelEnhancer extends Enhancer {
 
@@ -162,7 +161,7 @@ public class Neo4jModelEnhancer extends Enhancer {
                             code = "public " + ctField.getType().getName() + " " + getter + "() {" +
                                                 "if(this." + ctField.getName() + " == null){" +
                                                     "java.lang.reflect.Field field = this.getClass().getField(\"" +ctField.getName() + "\");" +
-                                                    "this." + ctField.getName() + "=play.modules.neo4j.relationship.Neo4jRelationFactory.getModelsFromRelation(\"" + relatedTo.value() + "\", \"" + relatedTo.direction() + "\", field, this.node);" +
+                                                    "this." + ctField.getName() + "=play.modules.neo4j.relationship.Neo4jRelationFactory.getModelsFromRelation(\"" + relatedTo.value() + "\",  org.neo4j.graphdb.Direction." + relatedTo.direction() + ", field, this.node);" +
                                                 "}" +
                                                  "return " + ctField.getName() + ";" +
                                           "}";

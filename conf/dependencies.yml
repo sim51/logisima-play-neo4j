@@ -1,27 +1,15 @@
-self: play -> neo4j 1.0.2
+self: play -> neo4j 1.9
 
 require:
     - play
+    - org.neo4j -> neo4j 1.9
+    - org.neo4j.app -> neo4j-server 1.9
+    - org.neo4j.app -> neo4j-server 1.9 static-web
+    - com.sun.jersey -> jersey-core 1.9
     
 repositories:
-    - Neo4j:
+    - neo4j-release:
         type: iBiblio
         root: "http://m2.neo4j.org/content/repositories/releases"
         contains:
-            - org.neo4j -> *   
-    - osgeo:
-        type: iBiblio
-        root: "http://download.osgeo.org/webdav/geotools/"          
-    - opengeo:
-        type: iBiblio
-        root: "http://repo.opengeo.org"
-        contains:
-            - org.opengeo -> *
-    - tinkerpop:
-        type: iBiblio
-        root: "http://tinkerpop.com/maven2"
-        contains:
-            - com.tinkerpop -> *           
-            
-            
-
+            - org.neo4j -> *
