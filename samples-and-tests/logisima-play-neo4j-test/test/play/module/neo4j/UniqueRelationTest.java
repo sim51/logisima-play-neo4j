@@ -4,7 +4,7 @@ import models.Address;
 import models.Job;
 import models.User;
 
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import play.modules.neo4j.exception.Neo4jException;
@@ -13,8 +13,8 @@ import play.test.UnitTest;
 
 public class UniqueRelationTest extends UnitTest {
 
-    @BeforeClass
-    public static void tearsUp() {
+    @Before
+    public void tearsUp() {
         Fixtures.deleteDatabase();
         Fixtures.loadYml("data.yml");
     }
