@@ -23,6 +23,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.neo4j.graphdb.Direction;
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Neo4jUniqueRelation {
@@ -32,6 +34,5 @@ public @interface Neo4jUniqueRelation {
     // active line saving mode for this element (to do an history, a time-line, like for blogs)
     boolean line() default true;
 
-    // can be "OUTGOING" or "INCOMING" but not both !
-    String direction() default "OUTGOING";
+    Direction direction() default Direction.BOTH;
 }

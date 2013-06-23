@@ -208,7 +208,7 @@ public class Neo4jFactory {
                         if (field.isAnnotationPresent(Neo4jRelatedTo.class) && field.get(nodeWrapper) != null) {
                             // we retrive annotation value
                             Neo4jRelatedTo neo4jRelatedTo = field.getAnnotation(Neo4jRelatedTo.class);
-                            Direction relationDirection = Direction.valueOf(neo4jRelatedTo.direction());
+                            Direction relationDirection = neo4jRelatedTo.direction();
                             RelationshipType relationType = DynamicRelationshipType.withName(neo4jRelatedTo.value());
 
                             // construct an hasmap of database relation from node with begin node / relation format.
@@ -271,7 +271,7 @@ public class Neo4jFactory {
                         if (field.isAnnotationPresent(Neo4jUniqueRelation.class)) {
                             // we retrive annotation value
                             Neo4jUniqueRelation neo4jUnique = field.getAnnotation(Neo4jUniqueRelation.class);
-                            Direction relationDirection = Direction.valueOf(neo4jUnique.direction());
+                            Direction relationDirection = neo4jUnique.direction();
                             RelationshipType relationType = DynamicRelationshipType.withName(neo4jUnique.value());
                             // get GETTER method
                             String propertyName = field.getName().substring(0, 1).toUpperCase()

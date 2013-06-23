@@ -23,6 +23,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.RelationshipType;
+
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Neo4jRelatedTo {
@@ -31,6 +34,5 @@ public @interface Neo4jRelatedTo {
 
     boolean lazy() default true;
 
-    // can be "OUTGOING" or "INCOMING" but not both !
-    String direction() default "OUTGOING";
+    Direction direction() default Direction.BOTH;
 }
