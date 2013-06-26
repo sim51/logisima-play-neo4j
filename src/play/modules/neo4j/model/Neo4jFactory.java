@@ -210,14 +210,17 @@ public class Neo4jFactory {
                             Neo4jRelatedTo neo4jRelatedTo = field.getAnnotation(Neo4jRelatedTo.class);
                             Direction relationDirection = neo4jRelatedTo.direction();
                             RelationshipType relationType = DynamicRelationshipType.withName(neo4jRelatedTo.value());
+                            
+                            // we begin from the node
+                            Node startNode = nodeWrapper.getNode();
 
                             // construct an hasmap of database relation from node with begin node / relation format.
                             Map<String, Relationship> dbMapRelations = new HashMap<String, Relationship>();
-                            Iterable<Relationship> dbNodeRlation = nodeWrapper.getNode().getRelationships(
+                            Iterable<Relationship> dbNodeRlation = startNode.getRelationships(
                                     relationDirection, relationType);
                             for (Relationship relation : dbNodeRlation) {
-                                dbMapRelations.put(relation.getStartNode().getId() + "@"
-                                        + relation.getEndNode().getId(), relation);
+                                dbMapRelations.put(startNode.getId() + "@"
+                                        + relation.getOtherNode(startNode).getId(), relation);
                             }
                             // this map is the stack where relation are store and remove to khnow wich are to add or
                             // deleted
@@ -231,18 +234,7 @@ public class Neo4jFactory {
                                     throw new Neo4jPlayException(
                                             "You have to 'save' all related model, before to 'save' parent model");
                                 }
-                                // looking for start node (that's why Neo4jRelatedTo can't have "BOTH" value for
-                                // direction).
-                                Node startNode;
-                                Node endNode;
-                                if (relationDirection.equals(Direction.INCOMING)) {
-                                    startNode = related.node;
-                                    endNode = nodeWrapper.getNode();
-                                }
-                                else {
-                                    startNode = nodeWrapper.getNode();
-                                    endNode = related.node;
-                                }
+                                Node endNode = related.node;
 
                                 // if dbMap has startNode, then it's OK, nothing to do
                                 if (dbMapRelationsStack.containsKey(startNode.getId() + "@" + endNode.getId())) {
