@@ -3,7 +3,9 @@ package play.module.neo4j;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.RelationshipType;
+import org.neo4j.tooling.GlobalGraphOperations;
 
+import play.Logger;
 import play.modules.neo4j.exception.Neo4jException;
 import play.modules.neo4j.util.Fixtures;
 import play.modules.neo4j.util.Neo4j;
@@ -16,12 +18,13 @@ public class FixturesTest extends UnitTest {
         Fixtures.deleteDatabase();
         Fixtures.loadYml("data.yml");
         assertEquals(12, countGraphNode());
-        assertEquals(14, countGraphRelationType());
+        assertEquals(11, countGraphRelationType());
     }
 
     private int countGraphNode() {
         int nb = 0;
-        for (Node node : Neo4j.db().getAllNodes()) {
+        for (Node node : GlobalGraphOperations.at(Neo4j.db()).getAllNodes()) {
+            Logger.info("Node " + node.getId() + " => " + node.toString());
             nb++;
         }
         return nb;
@@ -29,7 +32,8 @@ public class FixturesTest extends UnitTest {
 
     private int countGraphRelationType() {
         int nb = 0;
-        for (RelationshipType relationType : Neo4j.db().getRelationshipTypes()) {
+        for (RelationshipType relationType : GlobalGraphOperations.at(Neo4j.db()).getAllRelationshipTypes()) {
+            Logger.info("Relation " + relationType.name());
             nb++;
         }
         return nb;

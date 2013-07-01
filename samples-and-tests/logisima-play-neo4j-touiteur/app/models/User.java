@@ -13,6 +13,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.collection.IteratorUtil;
 
+import play.Logger;
 import play.db.jpa.Blob;
 import play.modules.neo4j.annotation.Neo4jIndex;
 import play.modules.neo4j.annotation.Neo4jRelatedTo;
@@ -150,13 +151,15 @@ public class User extends Neo4jModel {
 
             // delete the previous NEXT relationship
             Relationship next = this.node.getSingleRelationship(RelationType.NEXT, Direction.OUTGOING);
-            next.delete();
+            if (next != null)
+                next.delete();
 
             // create next link between user & touite
             this.node.createRelationshipTo(retouite.node, RelationType.NEXT);
 
             // relink lasttouite with the new one
-            retouite.node.createRelationshipTo(lastTouite.node, RelationType.NEXT);
+            if (lastTouite != null)
+                retouite.node.createRelationshipTo(lastTouite.node, RelationType.NEXT);
 
             // create author link
             retouite.node.createRelationshipTo(touite.getAuthor().node, RelationType.AUTHOR);
@@ -190,7 +193,8 @@ public class User extends Neo4jModel {
             Touite lastTouite = this.getLastTouite();
             // delete the previous NEXT relationship
             Relationship next = this.node.getSingleRelationship(RelationType.NEXT, Direction.OUTGOING);
-            next.delete();
+            if (next != null)
+                next.delete();
 
             // create next link between user & touite
             this.node.createRelationshipTo(touite.node, RelationType.NEXT);
@@ -199,7 +203,8 @@ public class User extends Neo4jModel {
             touite.node.createRelationshipTo(this.node, RelationType.AUTHOR);
 
             // relink lasttouite with the new one
-            touite.node.createRelationshipTo(lastTouite.node, RelationType.NEXT);
+            if (lastTouite != null)
+                touite.node.createRelationshipTo(lastTouite.node, RelationType.NEXT);
 
             // +1
             if (this.nbTouite != null) {
@@ -221,6 +226,12 @@ public class User extends Neo4jModel {
         //@formatter:off
         ExecutionResult result = engine.execute("" +
                 "START user=node(" + user.node.getId() + ") " +
+                "MATCH reco-[:IS_FRIEND*1..3]->user, user-[r?:IS_FRIEND]->reco " +
+                "WHERE r IS NULL  and not(reco.key = user.key) " +
+                "RETURN reco, COUNT(*) " +
+                "ORDER BY COUNT(*) DESC, reco.key " +
+                "LIMIT 3");
+        Logger.debug("START user=node(" + user.node.getId() + ") " +
                 "MATCH reco-[:IS_FRIEND*1..3]->user, user-[r?:IS_FRIEND]->reco " +
                 "WHERE r IS NULL  and not(reco.key = user.key) " +
                 "RETURN reco, COUNT(*) " +

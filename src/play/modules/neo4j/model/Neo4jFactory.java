@@ -122,8 +122,10 @@ public class Neo4jFactory {
     /**
      * Method to retrieve a node by a key.
      * 
-     * @param key the idenfifier of the node
-     * @param indexName Name of the index on wich to search
+     * @param key
+     *        the idenfifier of the node
+     * @param indexName
+     *        Name of the index on wich to search
      * @return
      */
     public Node getByKey(Long key, String indexName) {
@@ -154,7 +156,8 @@ public class Neo4jFactory {
     /**
      * Method to save/update and index a node.
      * 
-     * @param nodeWrapper to save
+     * @param nodeWrapper
+     *        to save
      * @return the save or update node
      * @throws Neo4jException
      * @throws IllegalAccessException
@@ -210,17 +213,17 @@ public class Neo4jFactory {
                             Neo4jRelatedTo neo4jRelatedTo = field.getAnnotation(Neo4jRelatedTo.class);
                             Direction relationDirection = neo4jRelatedTo.direction();
                             RelationshipType relationType = DynamicRelationshipType.withName(neo4jRelatedTo.value());
-                            
+
                             // we begin from the node
                             Node startNode = nodeWrapper.getNode();
 
-                            // construct an hasmap of database relation from node with begin node / relation format.
+                            // construct an hashmap of database relation from node with begin node / relation format.
                             Map<String, Relationship> dbMapRelations = new HashMap<String, Relationship>();
-                            Iterable<Relationship> dbNodeRlation = startNode.getRelationships(
-                                    relationDirection, relationType);
+                            Iterable<Relationship> dbNodeRlation = startNode.getRelationships(relationDirection,
+                                    relationType);
                             for (Relationship relation : dbNodeRlation) {
-                                dbMapRelations.put(startNode.getId() + "@"
-                                        + relation.getOtherNode(startNode).getId(), relation);
+                                dbMapRelations.put(startNode.getId() + "@" + relation.getOtherNode(startNode).getId(),
+                                        relation);
                             }
                             // this map is the stack where relation are store and remove to khnow wich are to add or
                             // deleted
@@ -261,10 +264,12 @@ public class Neo4jFactory {
 
                         // UniqueRelation annotation
                         if (field.isAnnotationPresent(Neo4jUniqueRelation.class)) {
+
                             // we retrive annotation value
                             Neo4jUniqueRelation neo4jUnique = field.getAnnotation(Neo4jUniqueRelation.class);
                             Direction relationDirection = neo4jUnique.direction();
                             RelationshipType relationType = DynamicRelationshipType.withName(neo4jUnique.value());
+
                             // get GETTER method
                             String propertyName = field.getName().substring(0, 1).toUpperCase()
                                     + field.getName().substring(1);
@@ -427,7 +432,8 @@ public class Neo4jFactory {
      * Method to delete a node. If it still have a relationship (otherwise than ref2node one), this method throw a
      * runtime exception.
      * 
-     * @param nodeWrapper to delete
+     * @param nodeWrapper
+     *        to delete
      * @return the deleted object
      * @throws Neo4jException
      */
@@ -438,7 +444,8 @@ public class Neo4jFactory {
     /**
      * Method to delete a node, also when it still have relationship. Use this method carefully !
      * 
-     * @param nodeWrapper to delete
+     * @param nodeWrapper
+     *        to delete
      * @return the object deleted
      * @throws Neo4jException
      */
@@ -450,7 +457,8 @@ public class Neo4jFactory {
      * General(private) method to delete a node.
      * 
      * @param nodeWrapper
-     * @param forceDelete if this param is set to TRUE, then all relationship will be deleted before we delete the node.
+     * @param forceDelete
+     *        if this param is set to TRUE, then all relationship will be deleted before we delete the node.
      * @return The object that have been deleted.
      * @throws Neo4jException
      */
