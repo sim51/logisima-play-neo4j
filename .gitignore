@@ -1,14 +1,12 @@
 /.classpath
 /.project
 /modules
-/dist
 /test-result
 /logs
 /eclipse/
 /.settings/
 /tmp/
 /bin/
-/lib/play-neo4j.jar
 /samples-and-tests/logisima-play-neo4j-test/eclipse/
 /samples-and-tests/logisima-play-neo4j-test/logs/
 /samples-and-tests/logisima-play-neo4j-test/tmp/
