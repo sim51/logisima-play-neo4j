@@ -54,12 +54,12 @@ public class UniqueRelationTest extends UnitTest {
     public void saveNormalWithNullBefore() throws Neo4jException {
         User user = (User) User.queryIndex("lastname", "lastname:*bossard* OR firstname:*bossard*").get(0);
         Address address = new Address();
-        address.title = "my address";
+        address.title = "My new address";
         address.save();
         user.address = address;
         user.save();
         User after = (User) User.queryIndex("lastname", "lastname:*bossard* OR firstname:*bossard*").get(0);
-        assertEquals("my address", after.address.title);
+        assertEquals("My new address", after.address.title);
     }
 
     @Test

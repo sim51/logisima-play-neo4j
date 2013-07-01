@@ -67,6 +67,16 @@ Relation(44):
  from: User_2
  to: User_4
 
+Relation(51):
+ type: IS_FRIEND
+ from: User_2
+ to: User_3
+
+Relation(52):
+ type: IS_FRIEND
+ from: User_1
+ to: User_2
+ 
 Relation(46):
  type: IS_FAMILLY
  from: User_2

@@ -2,6 +2,10 @@
 <p>
     This module allows you to use an embedded <a href="http://neo4j.org">Neo4j database</a> and managed your model with annotation (like JPA). This module is similar as <a href="http://www.springsource.org/spring-data/neo4j">Spring data neo4j</a>, it's the same philosophy.  
 </p>
+<p><strong>
+    Since version 1.1, relation values are not String anymore but Relation. So you should change a little of code if you do an upgrade of this module ! 
+</strong></p>
+
 
 <h2><a>Installation</a></h2>
 <h3><a>Enabled Neo4j module</a></h3>
@@ -110,6 +114,13 @@ With Neo4jRelatedTo annotation, you can also defined some attributes :
 <ul>
     <li><strong>lazy :</strong> like hibernate, you can do lazy loading for relation. By default, it's value is "true" to avoid circular reference and avoid loop that produce "Java Heap Space".</li>
     <li><strong>direction :</strong>to specified the direction of the relation. By default, it's OUTGOING, but you can change it to INCOMING or BOTH.</li>
+</ul>
+<h4>Neo4jUniqueRelation</h4>
+<p>This annotation has been created to simplify a neo4j pattern : a chain of node. <br/> It's a kind of history : myBlogPost3 -NEXT-> myBlogPost2 -Next-> myBlogPost1</p>
+<p>To know more about this new feature, see
+<ul>
+   <li>User model with Job & Address on the sample application</li>
+   <li>The unit test to know how to use it : https://github.com/sim51/logisima-play-neo4j/blob/master/samples-and-tests/logisima-play-neo4j-test/test/play/module/neo4j/UniqueRelationTest.java</li>
 </ul>
 
 

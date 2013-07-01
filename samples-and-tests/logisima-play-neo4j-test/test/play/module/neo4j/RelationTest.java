@@ -60,4 +60,12 @@ public class RelationTest extends Neo4jUnit {
         List<User> classmates = user.classmates;
         assertEquals(0, classmates.size());
     }
+
+    @Test
+    public void loadRelationWithBothDirection() throws Neo4jException {
+        User user = (User) User.queryIndex("lastname", "lastname:*beno* OR firstname:*beno*").get(0);
+        assertEquals(2, user.friends.size());
+        assertEquals(1, user.reversefriends.size());
+        assertEquals(3, user.allFriends.size());
+    }
 }

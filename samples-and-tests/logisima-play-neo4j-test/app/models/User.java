@@ -41,6 +41,9 @@ public class User extends Neo4jModel {
     @Neo4jRelatedTo(value = "IS_FRIEND", direction = Direction.INCOMING, lazy = true)
     public List<User> reversefriends;
 
+    @Neo4jRelatedTo(value = "IS_FRIEND", direction = Direction.BOTH, lazy = true)
+    public List<User> allFriends;
+
     @Neo4jRelatedTo("IS_FAMILLY")
     public List<User> famillies;
 
@@ -50,7 +53,7 @@ public class User extends Neo4jModel {
     @Neo4jRelatedTo(value = "IS_A_CLASSMATE")
     public List<User> classmates;
 
-    @Neo4jUniqueRelation(value = "NEXT_JOB", line = false)
+    @Neo4jUniqueRelation(value = "NEXT_JOB", line = true)
     public Job        job;
 
     @Neo4jUniqueRelation(value = "ADDRESS", line = false)
